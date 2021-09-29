@@ -1,3 +1,4 @@
+import numpy
 import os
 import sys
 srcpath = os.path.realpath('./tabor')
@@ -5,13 +6,8 @@ sys.path.append(srcpath)
 import pyte_visa_utils as pyte
 from tevisainst import TEVisaInst
 
-import numpy as np
-
-#internal
 inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
-#usb cable
-#inst_addr = 'TCPIP::192.168.71.1::5025::SOCKET'
-  
+#inst_addr = 'TCPIP::192.168.71.1::5025::SOCKET'  
 inst = TEVisaInst(inst_addr)
 
 # Get the instrument's *IDN
@@ -27,15 +23,11 @@ resp = inst.send_scpi_query(":INST:CHAN? MAX")
 print("Number of channels: " + resp)
 num_channels = int(resp)
 
-
-
 # set sampling DAC freq.
 sampleRateDAC = 1E9
 print('Sample Clk Freq {0}'.format(sampleRateDAC))
 cmd = ':FREQ:RAST {0}'.format(sampleRateDAC)
 rc = inst.send_scpi_cmd(cmd)
-
-
 
 # Get the maximal number of segments
 resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
@@ -50,22 +42,22 @@ print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
 max_dac = 2 ** 16 - 1
 half_dac = 2 ** 16 - 1
 quarter_dac = 2 ** 14 - 1
-data_type = np.uint16
+data_type = numpy.uint16
 segLen = 4096
-x = np.linspace(-4000, 4000, segLen)
+x = numpy.linspace(-4000, 4000, segLen)
 # Make the function.
 def single_waveform(x):
-    return ( (- np.tanh(x-5) - np.tanh(-x-5)) * (1 - 0.3*x + 0.005*x**3) ) / 1.8 #(1 - 0.3*x + 0.005*x**3)
+    return ( (- numpy.tanh(x-5) - numpy.tanh(-x-5)) * (1 - 0.3*x + 0.005*x**3) ) / 1.8 #(1 - 0.3*x + 0.005*x**3)
 
 y = single_waveform(x) - 0.7 * single_waveform(x - 50) - 0.4 * single_waveform(x - 100) - 0.9 * single_waveform(x - 150) 
 
 
 # Normalize it to the maximum the DAC can receive.
-y =  y * quarter_dac + 2.01**15#+ half_dac
+y =  y * quarter_dac + 2.01**15
 # Round the double to the nearest digit.
-y = np.round(y)
+y = numpy.round(y)
 # If the values are in the valid range, numpy.clip will not change the data.
-y = np.clip(y, 0, max_dac)
+y = numpy.clip(y, 0, max_dac)
 # Convert from double to int.
 y = y.astype(data_type)
 
@@ -81,7 +73,6 @@ rc = inst.send_scpi_cmd(cmd)
 # Default: CLK
 #cmd = ':XINS:SYNC:TYPE TRIG'
 
-
 # Define segment
 cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(y))
 rc = inst.send_scpi_cmd(cmd)
@@ -90,13 +81,16 @@ rc = inst.send_scpi_cmd(cmd)
 cmd = ':TRAC:SEL {0}'.format(segnum)
 rc = inst.send_scpi_cmd(cmd)
 
-
-
 # Increase the timeout before writing binary-data:
 inst.timeout = 30000
 inst.write_binary_data('*OPC?; :TRAC:DATA', y)
 resp = inst.send_scpi_query(':SYST:ERR?')
-if resp[0] == '0': print('Download Succesful')
+
+if resp[0] == '0':
+    print('Download successful')
+else:
+    print('Download not successful.')
+
 # Set normal timeout
 inst.timeout = 10000
 
@@ -111,14 +105,13 @@ rc = inst.send_scpi_cmd(cmd)
 cmd = ':TRIG:SOUR:ENAB TRG1'
 rc = inst.send_scpi_cmd(cmd)
 
-
 # Select the external trigger 1.
 cmd = ':TRIG:SEL EXT1'
 rc = inst.send_scpi_cmd(cmd)
 
+# Turn on low trigger jitter.
 cmd = 'TRIG:LTJ ON'
 rc = inst.send_scpi_cmd(cmd)
-
 
 # Set the trigger level.
 # This was originally 0, we had to change to 0.1.
