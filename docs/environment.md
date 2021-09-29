@@ -11,7 +11,7 @@ List of environments.
 
 # Circuit diagram
 
-(diagram here)
+![](test.png)
 
 ## Procedure
 
