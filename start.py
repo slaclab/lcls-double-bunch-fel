@@ -1,6 +1,6 @@
 import os
 import sys
-srcpath = os.path.realpath('../SourceFiles')
+srcpath = os.path.realpath('./tabor')
 sys.path.append(srcpath)
 import pyte_visa_utils as pyte
 from tevisainst import TEVisaInst
@@ -10,7 +10,7 @@ import numpy as np
 #internal
 inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
 #usb cable
-inst_addr = 'TCPIP::192.168.71.1::5025::SOCKET'
+#inst_addr = 'TCPIP::192.168.71.1::5025::SOCKET'
   
 inst = TEVisaInst(inst_addr)
 
@@ -27,11 +27,15 @@ resp = inst.send_scpi_query(":INST:CHAN? MAX")
 print("Number of channels: " + resp)
 num_channels = int(resp)
 
+
+
 # set sampling DAC freq.
 sampleRateDAC = 1E9
 print('Sample Clk Freq {0}'.format(sampleRateDAC))
 cmd = ':FREQ:RAST {0}'.format(sampleRateDAC)
 rc = inst.send_scpi_cmd(cmd)
+
+
 
 # Get the maximal number of segments
 resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
@@ -43,23 +47,29 @@ resp = inst.send_scpi_query(":TRACe:FREE?")
 arbmem_capacity = int(resp)
 print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
 
-dac_res = 16
-max_dac = 2 ** dac_res - 1
-half_dac = max_dac / 2.0
+max_dac = 2 ** 16 - 1
+half_dac = 2 ** 16 - 1
+quarter_dac = 2 ** 14 - 1
 data_type = np.uint16
-
-# Build and Scale Waveform
-amp = 1    
 segLen = 4096
-cycles = 100
-time = np.linspace(0, segLen-1, segLen)
-omega = 2 * np.pi * cycles
-dacWave = (np.sin(omega*time/segLen) + 1.0) * half_dac
-dacWave = np.round(dacWave)
-dacWave = np.clip(dacWave, 0, max_dac)
-dacWave = dacWave.astype(data_type)
+x = np.linspace(-4000, 4000, segLen)
+# Make the function.
+def single_waveform(x):
+    return ( (- np.tanh(x-5) - np.tanh(-x-5)) * (1 - 0.3*x + 0.005*x**3) ) / 1.8 #(1 - 0.3*x + 0.005*x**3)
 
-ch=1
+y = single_waveform(x) - 0.7 * single_waveform(x - 50) - 0.4 * single_waveform(x - 100) - 0.9 * single_waveform(x - 150) 
+
+
+# Normalize it to the maximum the DAC can receive.
+y =  y * quarter_dac + 2.01**15#+ half_dac
+# Round the double to the nearest digit.
+y = np.round(y)
+# If the values are in the valid range, numpy.clip will not change the data.
+y = np.clip(y, 0, max_dac)
+# Convert from double to int.
+y = y.astype(data_type)
+
+ch = 1
 segnum = 1
 print('Download wave to segment {0} of channel {1}'.format(segnum, ch))
 
@@ -67,40 +77,69 @@ print('Download wave to segment {0} of channel {1}'.format(segnum, ch))
 cmd = ':INST:CHAN {0}'.format(ch)
 rc = inst.send_scpi_cmd(cmd)
 
+# Use the external trigger as the clock.
+# Default: CLK
+#cmd = ':XINS:SYNC:TYPE TRIG'
+
+
 # Define segment
-cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(dacWave))
+cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(y))
 rc = inst.send_scpi_cmd(cmd)
 
 # Select the segment
 cmd = ':TRAC:SEL {0}'.format(segnum)
 rc = inst.send_scpi_cmd(cmd)
 
+
+
 # Increase the timeout before writing binary-data:
 inst.timeout = 30000
-inst.write_binary_data('*OPC?; :TRAC:DATA', dacWave)
+inst.write_binary_data('*OPC?; :TRAC:DATA', y)
 resp = inst.send_scpi_query(':SYST:ERR?')
 if resp[0] == '0': print('Download Succesful')
 # Set normal timeout
 inst.timeout = 10000
 
-
 # Play the specified segment at the selected channel:
 cmd = ':SOUR:FUNC:MODE:SEGM {0}'.format(segnum)
 rc = inst.send_scpi_cmd(cmd)
 
-#Enable Ext Trigger
+#cmd = ':SOUR:VOLT MAX'
+#rc = inst.send_scpi_cmd(cmd)
+
+# Enable Ext Trigger
 cmd = ':TRIG:SOUR:ENAB TRG1'
 rc = inst.send_scpi_cmd(cmd)
+
+
+# Select the external trigger 1.
 cmd = ':TRIG:SEL EXT1'
 rc = inst.send_scpi_cmd(cmd)
-cmd = ':TRIG:LEV 0'
+
+cmd = 'TRIG:LTJ ON'
 rc = inst.send_scpi_cmd(cmd)
+
+
+# Set the trigger level.
+# This was originally 0, we had to change to 0.1.
+cmd = ':TRIG:LEV 0.1'
+rc = inst.send_scpi_cmd(cmd)
+
+# Following the trigger, send :TRIG:COUN number of waveforms, then return to idle.
 cmd = ':TRIG:COUN 1'
 rc = inst.send_scpi_cmd(cmd)
+
+# Keep sending the :TRIG:COUN number waveforms, even if another triggers appears. 
 cmd = ':TRIG:IDLE DC'
 rc = inst.send_scpi_cmd(cmd)
+
+# There is no :TRIG:STAT command. I think this is typo.
+# :TRIG:GATE:STAT is similar, which enables the gate for the trigger.
+# If :TRIG:GATE:STAT is 0 or OFF, then all triggers are ignored.
 cmd = ':TRIG:STAT ON'
 rc = inst.send_scpi_cmd(cmd)
+
+# Disable continuous (aka free-running) mode, and force trigger mode.
 cmd = ':INIT:CONT OFF'
 rc = inst.send_scpi_cmd(cmd)
 

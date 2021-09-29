@@ -1,6 +1,6 @@
 import os
 import sys
-srcpath = os.path.realpath('../SourceFiles')
+srcpath = os.path.realpath('../tabor')
 sys.path.append(srcpath)
 import pyte_visa_utils as pyte
 from tevisainst import TEVisaInst
