@@ -1,14 +1,23 @@
-from bokeh.plotting import figure, show
+from bokeh.models import Div, Button
+from bokeh.layouts import column
+from bokeh.io import output_file
+from bokeh.plotting import figure, curdoc
+from bokeh.client import push_session
+import awg.start
+
+def send_waveform():
+    awg.start.send_waveform()
 
 def show_panel():
-    x = [1, 2, 3, 4, 5]
-    y = [6, 7, 2, 4, 5]
+    # Bokeh uses the internet by default, but we need it offline. Set mode='inline' to do this.
+    output_file('dbfel.html', mode='inline')
     
-    # create a new plot with a title and axis labels
-    p = figure(title="Simple line example", x_axis_label="x", y_axis_label="y")
+    # On Button
+    button = Button(label="Send Waveform")
+    button.on_click(send_waveform)
     
-    # add a line renderer with legend and line thickness
-    p.line(x, y, legend_label="Temp.", line_width=2)
+    curdoc().title("Double Bunch FEL")
+    curdoc().add_root(column(button))
     
-    # show the results
-    show(p)
+    session = push_session(curdoc())
+    session.show()

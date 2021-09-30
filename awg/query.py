@@ -1,6 +1,6 @@
 import os
 import sys
-srcpath = os.path.realpath('../tabor')
+srcpath = os.path.realpath('../SourceFiles')
 sys.path.append(srcpath)
 import pyte_visa_utils as pyte
 from tevisainst import TEVisaInst
@@ -23,8 +23,9 @@ rc = inst.send_scpi_cmd(cmd)
 
 # Channel is selected. Make the query you want.
 
-cmd = 'TRIG:LTJ ?'
-rc = inst.send_scpi_cmd(cmd)
+resp = inst.send_scpi_query(":TRIG:LTJ?")
 
-resp = inst.send_scpi_query("TRIG:LTJ ?")
 print("Resp: " + resp)
+
+cmd = "FREQ:SOUR EXT"
+rc = inst.send_scpi_cmd(cmd)
