@@ -25,8 +25,6 @@ def start_waveform():
     print("Number of channels: " + resp)
     num_channels = int(resp)
 
-
-
     # set sampling DAC freq.
     sampleRateDAC = 1E9
     print('Sample Clk Freq {0}'.format(sampleRateDAC))
@@ -60,10 +58,10 @@ def start_waveform():
     y = single_waveform(x) - 0.7 * single_waveform(x - 50) - 0.4 * single_waveform(x - 100) - 0.9 * single_waveform(x - 150) 
 
     # Normalize it to the maximum the DAC can receive.
-    y =  y * quarter_dac + 2.01**15#+ half_dac
+    y =  y * quarter_dac + 2**15#+ half_dac
     # Round the double to the nearest digit.
     y = numpy.round(y)
-    # If the values are in the valid range, numpy.clip will not change the data.
+    # For safety, clip the data assuming the code is somehow faulty.
     y = numpy.clip(y, 0, max_dac)
     # Convert from double to int.
     y = y.astype(data_type)
