@@ -5,23 +5,17 @@ List of environments.
 ## Materials
 
 1. Tektronix Oscilloscope TDS3054B
-2. AWG. P2588D.
+2. AWG
 3. Network Switch
-4. Function generator. SRS DG645.
-5. Numerous BNC cables.
+4. Function generator
 
-## Theory
-
-Fundamental frequency of our RF cavity is 2856 MHz.
-Wavelength is 10.4 cm
-1/(2856 MHz) = 0.3501 nanosecond
-
-## Circuit diagram
+# Circuit diagram
 
 ![](test.png)
 
 ## Procedure
 
-1. Set amplitude on reference clock to 0.
+1. Set the function generator to square pulse, 120 Hz, at least 0.5 Volt.
+2. ...
 
 # Production

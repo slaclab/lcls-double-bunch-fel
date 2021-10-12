@@ -1,12 +1,13 @@
 import argparse
 import panel.panel
+import scope.scope
 
 def main():
     desc = ''
     parser = argparse.ArgumentParser(description = desc)
     args = parser.parse_args()
     
-    panel.panel.show_panel()
-
-if __name__ == "__main__":
+    panel.panel.start_bokeh_server()
+    
+if __name__ == '__main__':
     main()
