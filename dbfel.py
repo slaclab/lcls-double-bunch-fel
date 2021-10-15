@@ -1,13 +1,11 @@
-import argparse
-import panel.panel
-import scope.scope
+import view.panel
 
 def main():
-    desc = ''
-    parser = argparse.ArgumentParser(description = desc)
-    args = parser.parse_args()
+    # Start the model.
+    # Start the controller.
+    # Start the view.
     
-    panel.panel.start_bokeh_server()
+    view.panel.start_bokeh_server()
     
 if __name__ == '__main__':
     main()

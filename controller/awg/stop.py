@@ -1,7 +1,7 @@
 import os
 import sys
-from awg.tabor import pyte_visa_utils as pyte
-from awg.tabor.tevisainst import TEVisaInst
+from controller.awg.tabor import pyte_visa_utils as pyte
+from controller.awg.tabor.tevisainst import TEVisaInst
 
 import numpy
 

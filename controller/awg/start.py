@@ -1,37 +1,30 @@
 import os
 import sys
-from awg.tabor.tevisainst import TEVisaInst
-
 import numpy
+from controller.awg.tabor.tevisainst import TEVisaInst
+import controller.awg.pulse
 
-def start_waveform():
-    #internal
+def start_waveform(list_of_pulseinfo):
+    # Assuming this code runs on the Windows machine inside the AWG.
     inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
-    #usb cable
-    #inst_addr = 'TCPIP::192.168.71.1::5025::SOCKET'
-
     inst = TEVisaInst(inst_addr)
 
-    # Get the instrument's *IDN
+    # Always print debug info.
     resp = inst.send_scpi_query('*IDN?')
     print('Connected to: ' + resp)
-
-    # Get the model name
     resp = inst.send_scpi_query(":SYST:iNF:MODel?")
     print("Model: " + resp)
-
-    # Get number of channels
     resp = inst.send_scpi_query(":INST:CHAN? MAX")
     print("Number of channels: " + resp)
     num_channels = int(resp)
 
-    # set sampling DAC freq.
+    # Set the sample frequency to 1 GHz.
     sampleRateDAC = 1E9
     print('Sample Clk Freq {0}'.format(sampleRateDAC))
     cmd = ':FREQ:RAST {0}'.format(sampleRateDAC)
     rc = inst.send_scpi_cmd(cmd)
 
-    #Enable external clock EXT, internal clock INT
+    # Enable external clock EXT from the function generator.
     cmd = "FREQ:SOUR EXT"
     rc = inst.send_scpi_cmd(cmd)
 
@@ -44,19 +37,14 @@ def start_waveform():
     resp = inst.send_scpi_query(":TRACe:FREE?")
     arbmem_capacity = int(resp)
     print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
+    
+    waveform = controller.awg.pulse.Waveform(list_of_pulseinfo)
+    y = waveform.get_waveform()
 
     max_dac = 2 ** 16 - 1
     half_dac = 2 ** 16 - 1
     quarter_dac = 2 ** 14 - 1
     data_type = numpy.uint16
-    segLen = 4096
-    x = numpy.linspace(-10, 4000, segLen)
-    # Make the function.
-    def single_waveform(x):
-        return ( (- numpy.tanh(x-5) - numpy.tanh(-x-5)) * (1 - 0.3*x + 0.005*x**3) ) / 1.8 #(1 - 0.3*x + 0.005*x**3)
-
-    y = single_waveform(x) - 0.7 * single_waveform(x - 50) - 0.4 * single_waveform(x - 100) - 0.9 * single_waveform(x - 150) 
-
     # Normalize it to the maximum the DAC can receive.
     y =  y * quarter_dac + 2**15#+ half_dac
     # Round the double to the nearest digit.
@@ -114,11 +102,11 @@ def start_waveform():
     cmd = ':TRIG:COUN 1'
     rc = inst.send_scpi_cmd(cmd)
 
-    # Keep sending the :TRIG:COUN number waveforms, even if another triggers appears. 
+    # In case something incorrectly sends another trigger, keep sending the :TRIG:COUN number of waveforms.
     cmd = ':TRIG:IDLE DC'
     rc = inst.send_scpi_cmd(cmd)
 
-    # There is no :TRIG:STAT command
+    # I believe there is no :TRIG:STAT command.
     cmd = ':TRIG:STAT ON'
     rc = inst.send_scpi_cmd(cmd)
 
@@ -126,6 +114,6 @@ def start_waveform():
     cmd = ':INIT:CONT OFF'
     rc = inst.send_scpi_cmd(cmd)
 
-    # Turn on the output of the selected channel:
+    # Turn on the output of the selected channel.
     cmd = ':OUTP ON'
     rc = inst.send_scpi_cmd(cmd)
