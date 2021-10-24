@@ -1,11 +1,11 @@
-import view.panel
+import pulse.multipulse
+import panel.panel
 
 def main():
-    # Start the model.
-    # Start the controller.
-    # Start the view.
+    multipulse = pulse.multipulse.Multipulse()
+    thepanel = panel.panel.Panel(multipulse)
     
-    view.panel.start_bokeh_server()
+    thepanel.start()
     
 if __name__ == '__main__':
     main()

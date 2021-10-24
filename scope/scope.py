@@ -3,18 +3,20 @@ import numpy
 from struct import unpack
 
 def get_pyvisa_scope():
-    # Return the oscilloscope so we can get data and images from it.
-    # Useful commands for debugging:
-    # resources = rm.list_resources()
-    # idn = thescope.query('*IDN?')
-    
+    # Return the pyvisa scope so we can get data and images from it.
+
     scope_manual_ip = '192.168.1.123'
     rm = pyvisa.ResourceManager()
     scope = rm.open_resource('TCPIP::' + scope_manual_ip + '::INSTR')
+    
     return scope
 
+def get_image(scope):
+    pass
+
 def get_xy_lists(scope):
-    # Given some connection to the scope, get its X and Y values.
+    # Given the pyvisa scope, get its x and y plot.
+    
     scope.write('DATA:SOURCE CH1')
     scope.write('DATA:WIDTH 1')
     scope.write('DATA:ENC RPB')
