@@ -1,1 +1,1 @@
-Control the electron stripline kickers in the LCLS Double Bunch FEL project.
+Control the electron stripline kickers in the LCLS Multibunch project.
