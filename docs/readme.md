@@ -2,13 +2,14 @@ Control the electron stripline kickers in LCLS sector 21.
 
 # Production Environment
 
-![](production-diagram.png)
+![](production.png)
 
 ## Materials
 
-- Linux system. Has at least one ethernet port, display, keyboard, and mouse. Should be approved to operate in the tunnel and connect to EPICS. Capable of running Anaconda, Python 3.6, Firefox.
+- Linux system. Unknown OS. Has at least one ethernet port, display, keyboard, and mouse. Should be approved to operate in the tunnel and connect to EPICS. Capable of running Anaconda, Python 3.6, Firefox.
 - AWG: Proteus P2588D
-- Clock: 
+- Clock: 1.428 GHz BNC.
+- Trigger: 120 Hz BNC.
 
 ## Procedure
 
