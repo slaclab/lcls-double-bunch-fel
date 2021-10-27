@@ -6,6 +6,8 @@ Control the electron stripline kickers in the LCLS Multibunch project.
 
 # Test Environment
 
+![](test-diagram.png)
+
 1. Set up the AWG
    1. conda create --name myenv python=3.6
    1. source activate myenv
