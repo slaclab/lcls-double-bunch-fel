@@ -12,7 +12,7 @@ Control the electron stripline kickers in LCLS sector 21.
 
 ## Materials
 
-- Linux system. Unknown OS. Has at least one ethernet port, display, keyboard, and mouse. Should be approved to operate in the tunnel and connect to EPICS. Capable of running Anaconda, Python 3.6, Firefox.
+- Linux system. Unknown OS. Has at least one ethernet port, display, keyboard, and mouse. Should be approved to operate in the tunnel and connect to EPICS. Required to run Anaconda, Python 3.6. Not required to run graphics.
 - AWG: Proteus P2588D
 
 ## Procedure
@@ -36,14 +36,16 @@ Control the electron stripline kickers in LCLS sector 21.
 ## Materials
 
 - Tektronix Oscilloscope TDS3054B
-- AWG
-- Network Switch
-- Clock
+- Tabor Proteus 2588D
+- Network Switch : Linksys WRT110
+- Trigger : SRS DG645
+- Clock : Agilent N5181A
 
 ## Procedure
 
-1. Set the function generator to square pulse, 120 Hz, at least 0.5 Volt.
+1. Set the trigger to square pulse, 120 Hz, 0.5 Volt
 1. Set the clock to 1.428 GHz and 1dbm
+1. 
 1. Set up the AWG
    1. conda create --name myenv python=3.6
    1. source activate myenv
