@@ -4,15 +4,14 @@ Control the electron stripline kickers in LCLS sector 21.
 
 ![](production.png)
 
-- Ethernet: 127.0.0.1 port 5025.
-- Clock: 1.428 GHz BNC.
-- Trigger: 120 Hz BNC.
-- Waveform: -0.25 to 0.25 V signal which is replicated by the amplifiers. Amperage unknown.
-- Windows: Windows 10. Embedded.
-
 ## Materials
 
-- Linux system. Unknown OS. Has at least one ethernet port, display, keyboard, and mouse. Should be approved to operate in the tunnel and connect to EPICS. Required to run Anaconda, Python 3.6. Not required to run graphics.
+- Ethernet: 127.0.0.1 port 5025
+- Clock: 1.428 GHz BNC
+- Trigger: 120 Hz BNC
+- Waveform: -0.25 to 0.25 V, Amperage unknown
+- Windows: Windows 10
+- Linux: OS to be determined. Has at least one ethernet port, display, keyboard, and mouse. Should be approved to operate in the tunnel and connect to EPICS. Required to run Anaconda, Python 3.6. Not required to run graphics.
 - AWG: Proteus P2588D
 
 ## Procedure
