@@ -1,5 +1,5 @@
 from bokeh.models import Div, Button, ColumnDataSource, Slider
-from bokeh.layouts import column, row
+from bokeh.layouts import column, row, layout
 from bokeh.plotting import figure, show
 from bokeh.models import Range1d
 from bokeh.io import curdoc
@@ -9,19 +9,26 @@ import pulse.multipulse
 import awg.awg
 import scope.scope
 import numpy
+import signal
+import time
 
-class Panel:
+class Controls:
     def __init__(self, multipulse):
         self.multipulse = multipulse
         
         self.preview_figure_source = ColumnDataSource()
-        self.preview_figure = figure(title='Preview')
-        self.preview_figure.line(source=self.preview_figure_source)
+        self.preview_figure = figure(title = 'Preview')
+        self.preview_figure.line(source = self.preview_figure_source)
         
         self.oscilloscope_figure_source = ColumnDataSource()
-        self.oscilloscope_figure = figure(title='Measured')
-        self.oscilloscope_figure.line(source=self.oscilloscope_figure_source)
-        self.oscilloscope_figure.x_range=Range1d(9e-7, 1.1e-6)
+        self.oscilloscope_figure = figure(title = 'Oscilloscope')
+        self.oscilloscope_figure.line(source = self.oscilloscope_figure_source)
+        self.oscilloscope_figure.x_range = Range1d(9e-7, 1.1e-6)
+        
+    def stop_server(self):
+        self.server.stop()
+        self.server.unlisten()
+        self.server.io_loop.stop()
         
     def plot_oscilloscope(self):
         thescope = scope.scope.get_pyvisa_scope()
@@ -37,37 +44,35 @@ class Panel:
         numpy.savetxt('x', self.measured_x)
         numpy.savetxt('y', self.measured_y)
         
-    def add_awg_controls(self, doc):
-        preview_button = Button(label='Preview Waveform')
-        preview_button.on_click(self.plot_preview)
-        doc.add_root(column(self.preview_figure))
-        
-        start_button = Button(label='Start Waveform')
-        start_button.on_click(partial(awg.awg.start, self.multipulse))
+    def start_controls(self, doc):
+        stop_server_button = Button(label='Stop server')
+        stop_server_button.on_click(self.stop_server) 
 
         stop_button = Button(label='Stop Waveform')
         stop_button.on_click(awg.awg.stop)
-
-        doc.add_root(column(preview_button, start_button, stop_button))
-        self.multipulse.add_controls(doc)
         
-    def add_scope_controls(self, doc):
+        start_button = Button(label='Start Waveform')
+        start_button.on_click(partial(awg.awg.start, self.multipulse))
+        
+        preview_button = Button(label='Preview Waveform')
+        preview_button.on_click(self.plot_preview)
+        
         plot_button = Button(label='Plot Oscilloscope')
         plot_button.on_click(self.plot_oscilloscope)
 
-        save_button = Button(label='Save')
+        save_button = Button(label='Save Oscilloscope')
         save_button.on_click(self.save)
 
-        doc.add_root(column(plot_button, save_button))
-        doc.add_root(column(self.oscilloscope_figure))
+        add_pulse_button, multipulse_column = self.multipulse.get_controls()
+        controls = column(stop_server_button, multipulse_column, start_button, stop_button, preview_button, plot_button, save_button, add_pulse_button)
         
-    def start_bokeh_app(self, doc):
-        self.add_awg_controls(doc)
-        self.add_scope_controls(doc)
+        left = controls
+        right = column(self.preview_figure, self.oscilloscope_figure)
+
+        doc.add_root(row(left, right))
         
     def start(self):
-        myapp = {'/': self.start_bokeh_app}
-        myserver = Server(myapp)
-        myserver.start()
-        myserver.io_loop.add_callback(myserver.show, "/")
-        myserver.io_loop.start()
+        self.server = Server({'/': self.start_controls})
+        self.server.start()
+        self.server.io_loop.add_callback(self.server.show, "/")
+        self.server.io_loop.start()

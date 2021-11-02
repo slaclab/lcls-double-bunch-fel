@@ -28,7 +28,7 @@ class Multipulse:
             del multipulse_column.children[index]
             del self.list_of_pulse[index]
         
-    def add_controls(self, doc):
+    def get_controls(self):
         multipulse_column = column()
         
         for index, pulse in enumerate(self.list_of_pulse):
@@ -40,9 +40,8 @@ class Multipulse:
         
         add_pulse_button = Button(label='Add pulse')
         add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column))        
-        doc.add_root(column(add_pulse_button))
 
-        doc.add_root(multipulse_column)
+        return add_pulse_button, multipulse_column
         
     def get_multipulse(self):
         waveform = self.list_of_pulse[0].get_pulse()
@@ -57,15 +56,14 @@ class Multipulse:
         max_dac = 2 ** 16
         half_dac = 2 ** 15
         quarter_dac = 2 ** 14
-        data_type = numpy.uint16
 
-        # Not sure why we do this line.
-        waveform =  waveform * quarter_dac + 2**15
+        # Move the "0 Volt" value to 32000.
+        waveform =  waveform * quarter_dac + half_dac
         # Round the double to the nearest digit.
         waveform = numpy.round(waveform)
-        # For safety, clip the data assuming the code is somehow faulty.
+        # These values should be from 0 to 64000. Clip for safety.
         waveform = numpy.clip(waveform, 0, max_dac)
         # Convert from double to int.
-        waveform = waveform.astype(data_type)
+        waveform = waveform.astype(numpy.uint16)
             
         return waveform
