@@ -3,7 +3,7 @@ import sys
 import numpy
 from awg.tabor.tevisainst import TEVisaInst
 
-def start(multipulse):
+def send(multipulse):
     # Assuming this code runs on the Windows machine inside the AWG.
     inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
     inst = TEVisaInst(inst_addr)

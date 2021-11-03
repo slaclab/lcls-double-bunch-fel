@@ -1,21 +1,22 @@
 import pyvisa
 import numpy
 from struct import unpack
+import scope.scope_image
 
-def get_pyvisa_scope():
+def get_scope_lib():
     # Return the pyvisa scope so we can get data and images from it.
 
     scope_manual_ip = '192.168.1.123'
     rm = pyvisa.ResourceManager()
+    lib = rm.visalib
     scope = rm.open_resource('TCPIP::' + scope_manual_ip + '::INSTR')
     
-    return scope
-
-def get_image(scope):
-    pass
-
-def get_xy_lists(scope):
-    # Given the pyvisa scope, get its x and y plot.
+    return scope, lib
+    
+def get_sec_volt_lists():
+    # Given the pyvisa scope, get its curve where domain is second and range is volts.
+    
+    scope, lib = get_scope_lib()
     
     scope.write('DATA:SOURCE CH1')
     scope.write('DATA:WIDTH 1')

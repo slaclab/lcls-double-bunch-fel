@@ -58,7 +58,7 @@ class Multipulse:
         quarter_dac = 2 ** 14
 
         # Move the "0 Volt" value to 32000.
-        waveform =  waveform * quarter_dac + half_dac
+        waveform = waveform * quarter_dac + half_dac
         # Round the double to the nearest digit.
         waveform = numpy.round(waveform)
         # These values should be from 0 to 64000. Clip for safety.
