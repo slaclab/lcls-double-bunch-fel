@@ -9,19 +9,21 @@ class Pulse:
         self.x_offset = x_offset
         self.correction = True
         
-    def get_pulse(self):        
-        segLen = 4096
-        x = numpy.linspace(-10, segLen - 11, segLen)
-        xo = x - self.x_offset
+    def get_pulse(self):
+        length = 4096
+        start = -10
+        end = start + length - 1
+        x = numpy.linspace(start, end, length)
+        x = x - self.x_offset
         
-        y = ( (- numpy.tanh(xo - 5) - numpy.tanh(-xo - 5)) ) / 1.8
+        y = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) ) / 1.8
         
         if self.correction:
-            y = ( (- numpy.tanh(xo - 5) - numpy.tanh(-xo - 5)) * (1 - 0.3*xo + 0.005*xo**3) ) / 1.8
+            y = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) * (1 - 0.3*x + 0.005*x**3) ) / 1.8
             
-        ya = y * self.amplitude
+        y = y * self.amplitude
     
-        return ya
+        return x, y
     
     def change_amplitude(self, attr, old, new):
         self.amplitude = new

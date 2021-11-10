@@ -1,13 +1,13 @@
 import socket, re, time
 
-def get_scope_image(ip):
+def get_scope_image():
     # Works.
     
     input_buffer = 32 * 1024
 
     # Use sockets. It would be smarter to use the requests library, but this is fine.
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((ip, 80))
+    s.connect(('192.168.1.123', 80))
 
     # This won't work if the scope is password protected.
     cmd = b"GET /image.png HTTP/1.0\n\n"    

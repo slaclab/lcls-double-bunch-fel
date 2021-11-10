@@ -1,6 +1,3 @@
-import os
-import sys
-import numpy
 from awg.tabor.tevisainst import TEVisaInst
 
 def send(multipulse):
@@ -15,11 +12,14 @@ def send(multipulse):
     print("Model: " + resp)
     resp = inst.send_scpi_query(":INST:CHAN? MAX")
     print("Number of channels: " + resp)
-    num_channels = int(resp)
-
-    # Set the sample frequency to 1 GHz.
+    resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
+    print("Max segment number: " + resp)
+    
+    # Set the sample frequency to 1 GSa/s. (p. 66).
+    # Minimum is 1E9 and maximum is 9E9. Units are samples per second.
+    # The arbitrary waveform will be sampled at 1 GSa/s.
     sampleRateDAC = 1E9
-    print('Sample Clk Freq {0}'.format(sampleRateDAC))
+    print('Sample Clock Frequency {0}'.format(sampleRateDAC))
     cmd = ':FREQ:RAST {0}'.format(sampleRateDAC)
     rc = inst.send_scpi_cmd(cmd)
 
@@ -27,27 +27,26 @@ def send(multipulse):
     cmd = "FREQ:SOUR EXT"
     rc = inst.send_scpi_cmd(cmd)
 
-    # Get the maximal number of segments
-    resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
-    print("Max segment number: " + resp)
-    max_seg_number = int(resp)
-
     # Get the available memory in bytes of wavform-data (per DDR):
     resp = inst.send_scpi_query(":TRACe:FREE?")
     arbmem_capacity = int(resp)
     print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
 
-    y = multipulse.get_multipulse()
+    # Get the waveform to send to the FPGA's memory.
+    x, y = multipulse.get_multipulse()
 
+    # Set the channel and segment to send the waveform to.
     ch = 1
     segnum = 1
     print('Download wave to segment {0} of channel {1}'.format(segnum, ch))
 
-    # Select channel
+    # Select channel.
     cmd = ':INST:CHAN {0}'.format(ch)
     rc = inst.send_scpi_cmd(cmd)
 
-    # Define segment
+    # Select segment and the number of samples to send to the segment. The clock samples
+    # these data data points sequentially. The rate at which this sample is played 
+    # is defined by :SOUR:FREQ:RAST (p. 66).
     cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(y))
     rc = inst.send_scpi_cmd(cmd)
 
@@ -106,36 +105,6 @@ def send(multipulse):
 def stop():
     inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
     inst = TEVisaInst(inst_addr)
-
-    # Get the instrument's *IDN
-    resp = inst.send_scpi_query('*IDN?')
-    print('Connected to: ' + resp)
-
-    # Get the model name
-    resp = inst.send_scpi_query(":SYST:iNF:MODel?")
-    print("Model: " + resp)
-
-    # Get number of channels
-    resp = inst.send_scpi_query(":INST:CHAN? MAX")
-    print("Number of channels: " + resp)
-    num_channels = int(resp)
-
-    # set sampling DAC freq.
-    sampleRateDAC = 1E9
-    print('Sample Clk Freq {0}'.format(sampleRateDAC))
-    cmd = ':FREQ:RAST {0}'.format(sampleRateDAC)
-    rc = inst.send_scpi_cmd(cmd)
-
-    # Get the maximal number of segments
-    resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
-    print("Max segment number: " + resp)
-    max_seg_number = int(resp)
-
-    # Get the available memory in bytes of wavform-data (per DDR):
-    resp = inst.send_scpi_query(":TRACe:FREE?")
-    arbmem_capacity = int(resp)
-    print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
-
     ch = 1
 
     # Select channel
