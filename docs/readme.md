@@ -4,11 +4,13 @@ Control the electron stripline kickers in LCLS sector 21.
 
 ![](production.png)
 
-- Ethernet: 127.0.0.1 port 5025.
-- Clock: 1.428 GHz BNC.
-- Trigger: 120 Hz BNC.
-- Waveform: -0.25 to 0.25 V signal which is replicated by the amplifiers. Amperage unknown.
-- Windows: Windows 10. Embedded.
+- Ethernet: 127.0.0.1 port 5025 CAT5
+- Clock: Agilent N5181A 1.428 GHz BNC +1 dBm
+- Trigger: 120 Hz BNC square pulse 120 Hz 0.5 Volt
+- Waveform: -0.25 to 0.25 V Amperage unknown
+- Windows: Windows 10
+- Linux: OS to be determined. Must be approved to operate in the tunnel, must be shell-able, and must be able to caget production LCLS PVs. Must run Anaconda, Python 3.6. Not required to run graphics.
+- AWG: Tabor Proteus P2588D
 
 ## Materials
 
@@ -35,10 +37,12 @@ Control the electron stripline kickers in LCLS sector 21.
 
 ## Materials
 
+- Building 44 room 205
 - Tektronix Oscilloscope TDS3054B
-- AWG
-- Network Switch
-- Clock
+- Tabor Proteus 2588D
+- Switch: Linksys WRT110
+- Trigger: SRS DG645
+- Clock: Agilent N5181A
 
 ## Procedure
 
