@@ -1,5 +1,5 @@
 from bokeh.models import Div, Button, ColumnDataSource, Slider
-from bokeh.layouts import column, row
+from bokeh.layouts import column, row, grid
 from bokeh.plotting import figure, show
 from bokeh.models import Range1d
 from bokeh.server.server import Server
@@ -12,18 +12,25 @@ import base64
 class Controls:
     def __init__(self, multipulse):
         self.multipulse = multipulse
+        
+        # Anything regarding sizing is purely cosmetic.
+        # Preferably Bokeh does this for us but alas.
                 
         self.preview_figure_source = ColumnDataSource()
         self.preview_figure = figure(title = 'Preview', x_axis_label = 'Nanoseconds', y_axis_label = 'Volt')
         self.preview_figure.line(source = self.preview_figure_source)
-        self.preview_figure.x_range = Range1d(-20, 500)
+        self.preview_figure.x_range = Range1d(-20, 400)
+        self.preview_figure.sizing_mode = 'stretch_both'
         
         self.oscilloscope_image = Div()
+        self.oscilloscope_image.width = 640
+        self.oscilloscope_image.height = 480
         
         self.oscilloscope_figure_source = ColumnDataSource()
         self.oscilloscope_figure = figure(title = 'Oscilloscope', x_axis_label = 'Nanoseconds', y_axis_label = 'Volt')
         self.oscilloscope_figure.line(source = self.oscilloscope_figure_source)
         self.oscilloscope_figure.x_range = Range1d(600, 900)
+        self.oscilloscope_figure.sizing_mode = 'stretch_both'
         
     def stop_everything(self):
         awg.awg.stop()
@@ -57,7 +64,7 @@ class Controls:
         
     def start_controls(self, doc):
         stop_everything_button = Button(label='Stop everything')
-        stop_everything_button.on_click(self.stop_everything) 
+        stop_everything_button.on_click(self.stop_everything)
 
         stop_button = Button(label='Stop Waveform')
         stop_button.on_click(awg.awg.stop)
@@ -77,10 +84,12 @@ class Controls:
         image_button = Button(label = 'Image')
         image_button.on_click(self.get_image)
 
-        add_pulse_button, multipulse_column = self.multipulse.get_controls()
+        multipulse_column, add_pulse_button = self.multipulse.get_controls()
         left = column(stop_everything_button, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_button, save_button, image_button)
         
         right = column(self.preview_figure, self.oscilloscope_figure, self.oscilloscope_image)
+        right.height = 600
+        right.width = 500
 
         doc.add_root(row(left, right))
         

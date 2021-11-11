@@ -33,7 +33,7 @@ def send(multipulse):
     print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
 
     # Get the waveform to send to the FPGA's memory.
-    x, y = multipulse.get_multipulse()
+    x, y = multipulse.get_awg_waveform()
 
     # Set the channel and segment to send the waveform to.
     ch = 1

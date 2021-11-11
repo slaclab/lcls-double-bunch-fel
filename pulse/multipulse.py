@@ -17,24 +17,29 @@ class Multipulse:
         self.list_of_pulse.append(default_pulse)
         remove_button = Button(label = 'Remove')
         remove_button.on_click(partial(self.remove_pulse, multipulse_column, index))
+        remove_button.sizing_mode = 'stretch_width'
         control_row = default_pulse.get_control_row()
         control_row.children.append(remove_button)
         multipulse_column.children.append(control_row)
         
     def get_controls(self):
-        multipulse_column = column()
-                
+        multipulse_column = column() 
+        multipulse_column.width = 850
+        
         for index, pulse in enumerate(self.list_of_pulse):
             remove_button = Button(label = 'Remove')
             remove_button.on_click(partial(self.remove_pulse, multipulse_column, index))
+            remove_button.sizing_mode = 'stretch_width'
             control_row = pulse.get_control_row()
+            control_row.sizing_mode = 'stretch_width'
             control_row.children.append(remove_button)
+
             multipulse_column.children.append(control_row)
         
         add_pulse_button = Button(label = 'Add pulse')
-        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column))        
+        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column))
 
-        return add_pulse_button, multipulse_column
+        return multipulse_column, add_pulse_button
     
     def remove_pulse(self, multipulse_column, index):
         # Ensure there is one pulse to send into the AWG.
