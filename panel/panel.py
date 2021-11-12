@@ -8,8 +8,9 @@ import pulse.multipulse
 import awg.awg
 import scope.scope
 import base64
+import h5py
 
-class Controls:
+class Panel:
     def __init__(self, multipulse):
         self.multipulse = multipulse
         
@@ -84,7 +85,9 @@ class Controls:
         image_button = Button(label = 'Image')
         image_button.on_click(self.get_image)
 
-        multipulse_column, add_pulse_button = self.multipulse.get_controls()
+        multipulse_column = column()
+        add_pulse_button = self.multipulse.get_add_button(multipulse_column)
+        self.multipulse.add_controls_to(multipulse_column)        
         left = column(stop_everything_button, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_button, save_button, image_button)
         
         right = column(self.preview_figure, self.oscilloscope_figure, self.oscilloscope_image)

@@ -3,9 +3,9 @@ import panel.panel
 
 def main():
     multipulse = pulse.multipulse.Multipulse()
-    controls = panel.panel.Controls(multipulse)
+    thepanel = panel.panel.Panel(multipulse)
     
-    controls.start()
+    thepanel.start()
     
 if __name__ == '__main__':
     main()

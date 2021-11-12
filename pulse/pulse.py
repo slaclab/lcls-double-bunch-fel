@@ -18,9 +18,9 @@ class Pulse:
         x = x - self.x_offset
         
         y = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) *
-             (1 + self.linear_correction_coefficient*x + self.cubic_correction_coefficient*x**3) ) / 1.8
+             (1 + self.linear_correction_coefficient*x + self.cubic_correction_coefficient*x**3) )
             
-        y = y * self.amplitude
+        y = y * self.amplitude / 1.8
     
         return x, y
     

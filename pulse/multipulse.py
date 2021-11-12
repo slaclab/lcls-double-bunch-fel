@@ -17,35 +17,33 @@ class Multipulse:
         self.list_of_pulse.append(default_pulse)
         remove_button = Button(label = 'Remove')
         remove_button.on_click(partial(self.remove_pulse, multipulse_column, index))
-        remove_button.sizing_mode = 'stretch_width'
         control_row = default_pulse.get_control_row()
         control_row.children.append(remove_button)
         multipulse_column.children.append(control_row)
         
-    def get_controls(self):
-        multipulse_column = column() 
-        multipulse_column.width = 850
+    def get_add_button(self, multipulse_column):
+        add_pulse_button = Button(label = 'Add pulse')
+        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column))
         
+        return add_pulse_button
+        
+    def add_controls_to(self, multipulse_column):        
         for index, pulse in enumerate(self.list_of_pulse):
             remove_button = Button(label = 'Remove')
             remove_button.on_click(partial(self.remove_pulse, multipulse_column, index))
-            remove_button.sizing_mode = 'stretch_width'
             control_row = pulse.get_control_row()
-            control_row.sizing_mode = 'stretch_width'
             control_row.children.append(remove_button)
 
             multipulse_column.children.append(control_row)
-        
-        add_pulse_button = Button(label = 'Add pulse')
-        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column))
-
-        return multipulse_column, add_pulse_button
     
     def remove_pulse(self, multipulse_column, index):
-        # Ensure there is one pulse to send into the AWG.
         if len(self.list_of_pulse) > 1:
-            del multipulse_column.children[index]
             del self.list_of_pulse[index]
+            # The indices break on the other ones.
+            # Just delete everything and remake the controls so the indices are correct.
+            # Not exquisite programming.
+            multipulse_column.children.clear()
+            self.add_controls_to(multipulse_column)
         
     def get_awg_waveform(self):
         # Get the waveform to send to the AWG.
