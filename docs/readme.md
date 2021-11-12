@@ -1,4 +1,6 @@
-Control the electron stripline kickers in LCLS sector 21.
+Control the electron stripline kickers in the LCLS linear accelerator.
+
+![Capture](https://user-images.githubusercontent.com/89935000/141534359-73715a3d-bfac-4d9a-875f-b0daab74b26a.PNG)
 
 # Production Environment
 
