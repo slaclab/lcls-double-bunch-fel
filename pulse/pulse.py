@@ -39,26 +39,25 @@ class Pulse:
     def get_control_row(self):
         amplitude_slider = Slider(start = -1, end = 1, value = self.amplitude, step = 0.01, title = "Amplitude")
         amplitude_slider.on_change('value', self.change_amplitude)
-        amplitude_slider.width = 150
         
         x_offset_slider = Slider(start = 0, end = 200, value = self.x_offset, step = 1, title = "X Offset")
         x_offset_slider.on_change('value', self.change_x_offset)
-        x_offset_slider.width = 150
         
         linear_correction_coefficient_slider = Slider(start = -0.5, end = 0,
                                                       value = self.linear_correction_coefficient,
                                                       step = 0.1,
-                                                      title = 'Linear Correction Coefficient')
+                                                      title = 'Linear Coefficient')
         linear_correction_coefficient_slider.on_change('value', self.change_linear_correction_coefficient)
-        linear_correction_coefficient_slider.width = 200
         
         cubic_correction_coefficient_slider = Slider(start = 0, end = 0.01,
                                                      value = self.cubic_correction_coefficient,
                                                      step = 0.001,
                                                      format = '0[.]000',
-                                                     title = 'Cubic Correction Coefficient')
+                                                     title = 'Cubic Coefficient')
         cubic_correction_coefficient_slider.on_change('value', self.change_cubic_correction_coefficient)
-        cubic_correction_coefficient_slider.width = 200
-                
-        return row(amplitude_slider, x_offset_slider, linear_correction_coefficient_slider, cubic_correction_coefficient_slider)
+        
+        therow = row(amplitude_slider, x_offset_slider, linear_correction_coefficient_slider, cubic_correction_coefficient_slider)
+        therow.width = 800
+        
+        return therow
         
