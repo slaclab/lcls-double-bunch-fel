@@ -61,18 +61,29 @@ class Panel:
     def save(self):
         # Some boring file format. Make it readable.
         filename = time.strftime('%Y-%m-%d-%H-%M-%S')
+        savefile = h5py.File(filename, 'w')
         
         preview_x, preview_y = self.multipulse.get_preview_waveform()
-        oscilloscope_x, oscilloscope_y = scope.scope.get_nanosec_volt_lists()
         waveform_x, waveform_y = self.multipulse.get_awg_waveform()
-        
-        savefile = h5py.File(filename, 'w')
         savefile.create_dataset('preview_x', (len(preview_x),), data = preview_x)
         savefile.create_dataset('preview_y', (len(preview_y),), data = preview_y)
-        savefile.create_dataset('oscilloscope_x', (len(oscilloscope_x),), data = oscilloscope_x)
-        savefile.create_dataset('oscilloscope_y', (len(oscilloscope_y),), data = oscilloscope_y)
         savefile.create_dataset('waveform_x', (len(waveform_x),), data = waveform_x)
         savefile.create_dataset('waveform_y', (len(waveform_y),), data = waveform_y)
+        
+        # Save the traces. Each trace has x and y lists, each list is put in another list.
+        # Get one spurious trace to get its dimensions.
+        oscilloscope_x, oscilloscope_y = scope.scope.get_nanosec_volt_lists()
+        
+        oscilloscope_traces_x = list()
+        oscilloscope_traces_y = list()
+        
+        for index in range(self.number_of_traces):
+            oscilloscope_x, oscilloscope_y = scope.scope.get_nanosec_volt_lists()
+            oscilloscope_traces_x.append(oscilloscope_x)
+            oscilloscope_traces_y.append(oscilloscope_y)
+
+        savefile.create_dataset('oscilloscope_traces_x', (self.number_of_traces,len(oscilloscope_x)), data = oscilloscope_traces_x)
+        savefile.create_dataset('oscilloscope_traces_y', (self.number_of_traces,len(oscilloscope_y)), data = oscilloscope_traces_y)
         
         # some random dataset to store non-specific info
         attrs = savefile.create_dataset('attrs', (0,0))
@@ -82,6 +93,7 @@ class Panel:
         # also save waveform paramters please
         # also save multiple traces please
         
+        print('Done saving traces.')
         savefile.close()
         
     def change_number_of_traces(self, attr, old, new):
