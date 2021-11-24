@@ -8,7 +8,7 @@ import shutil
 import time
 import pyvisa
 
-def get():
+def get_nanosec_volt_lists():
     # Get nanosecond-Volt data from Tektronix TDS 7154.
     # Previously we used floppy disks.
     

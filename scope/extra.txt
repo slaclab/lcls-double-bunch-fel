@@ -1,4 +1,4 @@
-extra 
+if we want to turn the knobs on the scope just add new buttons that send these commands
 
 """#################SET THE OUTPUT FOLDER#################"""
 path = "c:/TempData"

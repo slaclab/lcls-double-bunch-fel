@@ -1,6 +1,6 @@
 import socket, re, time
 
-def get_scope_image():
+def get():
     # Works.
     
     input_buffer = 32 * 1024

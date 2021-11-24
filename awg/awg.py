@@ -92,8 +92,8 @@ def send(multipulse):
     rc = inst.send_scpi_cmd(cmd)
 
     # I believe there is no :TRIG:STAT command.
-    cmd = ':TRIG:STAT ON'
-    rc = inst.send_scpi_cmd(cmd)
+    #cmd = ':TRIG:STAT ON'
+    #rc = inst.send_scpi_cmd(cmd)
 
     # Disable continuous (aka free-running) mode, and force trigger mode.
     cmd = ':INIT:CONT OFF'

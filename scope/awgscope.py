@@ -1,7 +1,6 @@
 import pyvisa
 import numpy
 from struct import unpack
-import scope.scope_image
 
 def get_scope_lib():
     # Return the pyvisa scope so we can get data and images from it.
