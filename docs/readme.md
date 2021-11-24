@@ -19,9 +19,40 @@ Not official.
 
 ## Procedures
 
-### Installation
+# Test Environment
 
-1. ???
+- Location: Building 44 room 205
+
+![](test-diagram.png)
+
+- Oscilloscope: Tektronix TDS3054B
+- AWG: Tabor Proteus 2588D
+- Trigger: SRS DG645
+- Clock: Agilent N5181A
+
+![](https://user-images.githubusercontent.com/89935000/143211811-6b9165d9-7fbc-466b-b547-27252f304749.png)
+
+- FG: Keysight DC Power Supply E3632A 0-15V 7A / 0-30V 4A
+- FG?: TekPower 3003D 0-30V 0.3A: 0.15 A 3.1 V
+- PS: Matasuda
+- Trigger: SRS DG535
+- Scope1: Tektronix TDS 7154
+- Scope2: Tektronix TDS 3054B
+
+## Procedures
+
+### Install the AWG
+
+2. Set the function generator to square pulse, 120 Hz, at least 0.5 Volt.
+3. Set the clock to 1.428 GHz and 1dbm
+4. Set up the AWG
+   1. conda create --name myenv python=3.6
+   1. source activate myenv
+   1. python3 -m pip install pyvisa jupyerlab numpy bokeh h5py
+5. Set up the network.
+    1. Set the scope IP manually on the oscilloscope.
+    1. Set the scope IP and MAC address on the router.
+    1. Test the connection using the "Test Connection" button on the oscilloscope.
 
 ### Turn on or off the kickers
 
@@ -31,32 +62,3 @@ Not official.
 1. Change the waveform parameters.
 1. Start or stop the waveform sent to the AWG.
 
-# Test Environment
-
-![](test-diagram.png)
-
-- Location: Building 44 room 205
-- Tektronix Oscilloscope TDS3054B
-- Tabor Proteus 2588D
-- Switch: Linksys WRT110
-- Trigger: SRS DG645
-- Clock: Agilent N5181A
-
-## Procedures
-
-### Installation
-
-1. Set the function generator to square pulse, 120 Hz, at least 0.5 Volt.
-1. Set the clock to 1.428 GHz and 1dbm
-1. Set up the AWG
-   1. conda create --name myenv python=3.6
-   1. source activate myenv
-   1. python3 -m pip install pyvisa jupyerlab numpy bokeh h5py
-1. Set up the network.
-    1. Set the scope IP manually on the oscilloscope.
-    1. Set the scope IP and MAC address on the router.
-    1. Test the connection using the "Test Connection" button on the oscilloscope.
-
-### Turn on or off the waveform
-
-1. In the anaconda shell run main.py.
