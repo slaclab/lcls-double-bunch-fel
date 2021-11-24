@@ -1,0 +1,82 @@
+extra 
+
+"""#################SET THE OUTPUT FOLDER#################"""
+path = "c:/TempData"
+dpo.write('filesystem:mkdir "{}"'.format(path))
+
+"""#################SCOPE HORIZONTAL SETUP#################"""
+# dpo setup
+dpo.write('acquire:state off')
+dpo.write('horizontal:mode:scale {}'.format(hScale))
+dpo.write('horizontal:fastframe:state on')
+dpo.write('horizontal:fastframe:count {}'.format(numFrames))
+
+"""#################SCOPE CHANNELS BANDWIDTH#################"""
+#'full' set the bandwidth to 2.5GHz(HW) IMPORTANT: the vertical scale has to be at least 10mV/division to use this feature!
+dpo.write('ch1:bandwidth full')
+dpo.write('ch2:bandwidth full')
+dpo.write('ch3:bandwidth full')
+dpo.write('ch4:bandwidth full')
+
+"""#################SCOPE VERTICAL SETUP#################"""
+#vScale expressed in Volts
+dpo.write('ch1:scale {}'.format(vScale_ch1))
+dpo.write('ch2:scale {}'.format(vScale_ch2))
+dpo.write('ch3:scale {}'.format(vScale_ch3))
+dpo.write('ch3:scale {}'.format(vScale_ch4))
+
+dpo.write('ch1:position {}'.format(vPos_ch1))
+dpo.write('ch2:position {}'.format(vPos_ch2))
+dpo.write('ch3:position {}'.format(vPos_ch3))
+dpo.write('ch4:position {}'.format(vPos_ch4))
+
+print("# SCOPE VERTICAL SETUP #")
+print('CH1: verical scale set to {} V for division'.format(vScale_ch1))
+print('CH2: verical scale set to {} V for division'.format(vScale_ch2))
+print('CH3: verical scale set to {} V for division'.format(vScale_ch3))
+print('CH4: verical scale set to {} V for division'.format(vScale_ch4))
+
+dpo.write('TRIGGER:A:TYPE EDGE;:TRIGGER:A:LEVEL %f;:TRIGGER:A:EDGE:SOURCE %s'%(trigLevel,trigCh))
+dpo.write('TRIGGER:A:EDGE:SLOPE:%s FALL;:TRIGGER:A:MODE NORMAL'%(trigCh))
+# dpo.write(':TRIGGER:A:EDGE:SOURCE LINE') #TO trigger on the line (60Hz)
+
+trigprint='%.3f'%(trigLevel)
+
+print("# TRIGGER SETUP #")
+print('Trigger scale set to %s V\n'%(trigprint))
+
+dpo.write(':CH1:TER 50;:CH2:TER 50;:CH3:TER 50;:CH4:TER 50');
+
+# configure data transfer settings
+dpo.write('header off')
+dpo.write('horizontal:fastframe:sumframe none')
+dpo.write('data:encdg fastest')
+# dpo.write('data:source ch1')
+recordLength = int(dpo.query('horizontal:mode:recordlength?').strip())
+dpo.write('data:stop {}'.format(recordLength))
+dpo.write('wfmoutpre:byt_n 1')
+dpo.write('data:framestart 1')
+dpo.write('data:framestop {}'.format(numFrames))
+print('Data transfer settings configured.\n')
+
+dpo.read_termination = '\n'
+
+"""#################ACQUIRE DATA#################"""
+i = 0
+filename='{}/fastframe'.format(path)
+while (i*numFrames<totalNumber):
+    i+=1
+    print('Acquiring waveform {}'.format(i))
+    dpo.write('acquire:stopafter sequence')
+    dpo.write('acquire:state on')
+    dpo.query('*opc?')
+    print('Waveform {} acquired'.format(i))
+    dpo.write('save:waveform:fileformat INTERNAL')
+    dpo.write('save:waveform ch1, "%s_%d_CH1.wfm"'%(filename,i))
+    dpo.write('save:waveform ch2, "%s_%d_CH2.wfm"'%(filename,i))
+    dpo.write('save:waveform ch3, "%s_%d_CH3.wfm"'%(filename,i))
+    dpo.write('save:waveform ch4, "%s_%d_CH4.wfm"'%(filename,i))
+    
+    print('Waveform {} saved.\n'.format(i))    
+    
+dpo.close()

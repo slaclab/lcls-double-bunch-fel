@@ -7,6 +7,8 @@ from functools import partial
 import pulse.multipulse
 import awg.awg
 import scope.scope
+import scope.bigscope
+import scope.bigscope_image
 import base64
 import h5py
 import time
@@ -25,17 +27,24 @@ class Panel:
         self.preview_figure.x_range = Range1d(-20, 400)
         self.preview_figure.height = 300
         
-        self.oscilloscope_image = Div()
-        self.oscilloscope_image.sizing_mode = 'stretch_both'
+        self.oscilloscope_image = Div(height = 480)
+        
+        self.bigscope_image = Div(height = 480)
         
         self.oscilloscope_figure_source = ColumnDataSource()
         self.oscilloscope_figure_source.data = dict(x=[], y=[])
-        self.oscilloscope_figure = figure(title = 'Oscilloscope', x_axis_label = 'Nanoseconds', y_axis_label = 'Volt')
+        self.oscilloscope_figure = figure(title = 'Tinyscope', x_axis_label = 'Nanoseconds', y_axis_label = 'Volt')
         self.oscilloscope_figure.line(source = self.oscilloscope_figure_source)
         self.oscilloscope_figure.x_range = Range1d(600, 900)
         self.oscilloscope_figure.height = 300
         
-        self.number_of_traeces = 1
+        self.bigscope_figure_source = ColumnDataSource()
+        self.bigscope_figure_source.data = dict(x=[], y=[])
+        self.bigscope_figure = figure(title = 'Bigscope', x_axis_label = 'Nanoseconds', y_axis_label = 'Volt')
+        self.bigscope_figure.line(source = self.bigscope_figure_source)
+        self.bigscope_figure.height = 300
+        
+        self.number_of_traces = 1
         self.comment = ''
         
     def stop_everything(self):
@@ -45,14 +54,24 @@ class Panel:
         self.server.io_loop.stop()
         
     def get_image(self):
-        scope_file_data = scope.scope_image.get_scope_image()
-        data_uri = base64.b64encode(scope_file_data).decode('utf-8')
+        scope_image_data = scope.scope_image.get_scope_image()
+        data_uri = base64.b64encode(scope_image_data).decode('utf-8')
         img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
         self.oscilloscope_image.text = img_tag
+        
+    def get_bigscope_image(self):
+        scope_file_data = scope.bigscope_image.get()
+        data_uri = base64.b64encode(scope_file_data).decode('ascii')
+        img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
+        self.bigscope_image.text = img_tag
 
     def plot_oscilloscope(self):
         sec_list, volt_list = scope.scope.get_nanosec_volt_lists()
         self.oscilloscope_figure_source.data = dict(x = sec_list, y = volt_list)
+        
+    def plot_bigscope(self):
+        sec_list, volt_list = scope.bigscope.get()
+        self.bigscope_figure_source.data = dict(x = sec_list, y = volt_list)
         
     def plot_preview(self):
         preview_x, preview_y = self.multipulse.get_preview_waveform()
@@ -115,11 +134,17 @@ class Panel:
         preview_button = Button(label='Preview Waveform')
         preview_button.on_click(self.plot_preview)
         
-        plot_button = Button(label='Plot Oscilloscope')
+        plot_button = Button(label='Plot Tinyscope')
         plot_button.on_click(self.plot_oscilloscope)
+        
+        plot_bigscope_button = Button(label='Plot Bigscope')
+        plot_bigscope_button.on_click(self.plot_bigscope)
         
         image_button = Button(label = 'Get Image')
         image_button.on_click(self.get_image)
+        
+        bigscope_image_button = Button(label = 'Get Big Scope')
+        bigscope_image_button.on_click(self.get_bigscope_image)
         
         number_of_traces_spinner = Spinner(title = 'Number of traces to save', value = 1, low = 1, high = 50, step = 1)
         number_of_traces_spinner.on_change('value', self.change_number_of_traces)
@@ -133,9 +158,9 @@ class Panel:
         multipulse_column = column()
         add_pulse_button = self.multipulse.get_add_button(multipulse_column)
         self.multipulse.add_controls_to(multipulse_column)        
-        left = column(stop_everything_button, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_button, image_button, row(number_of_traces_spinner, comment_box), save_button)
+        left = column(stop_everything_button, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_button, plot_bigscope_button, image_button, bigscope_image_button, row(number_of_traces_spinner, comment_box), save_button)
         
-        right = column(self.preview_figure, self.oscilloscope_figure, self.oscilloscope_image)
+        right = column(self.preview_figure, self.oscilloscope_figure, self.bigscope_figure, self.oscilloscope_image, self.bigscope_image)
 
         doc.add_root(row(left, right))
         

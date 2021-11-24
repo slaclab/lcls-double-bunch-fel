@@ -74,6 +74,7 @@ def send(multipulse):
     cmd = ':TRIG:SEL EXT1'
     rc = inst.send_scpi_cmd(cmd)
 
+    # Magic thing that reduces jitter.
     cmd = 'TRIG:LTJ ON'
     rc = inst.send_scpi_cmd(cmd)
 
