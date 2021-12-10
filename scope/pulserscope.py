@@ -6,13 +6,14 @@ import signal
 import os
 import shutil
 import time
+import numpy
 import pyvisa
 
 def get_nanosec_volt_lists():
     # Get nanosecond-Volt data from Tektronix TDS 7154.
     # Previously we used floppy disks.
     
-    visa_address = 'TCPIP::192.168.1.124::INSTR'
+    visa_address = 'TCPIP::192.168.1.101::INSTR'
 
     rm = pyvisa.ResourceManager()
     scope = rm.open_resource(visa_address)
@@ -26,7 +27,6 @@ def get_nanosec_volt_lists():
     print(scope.query('*idn?'))
 
     # default setup
-    #scope.write('*rst')
     r = scope.query('*opc?') # sync
     
     r = scope.query('*opc?')
@@ -37,7 +37,6 @@ def get_nanosec_volt_lists():
     #r = scope.query('*opc?')
 
     # curve configuration
-    #scope.write('data:encdg SRIBINARY') # signed integer
     scope.write('data:source CH1')
     scope.write('data:start 1')
     acq_record = int(scope.query('horizontal:recordlength?'))
@@ -48,7 +47,7 @@ def get_nanosec_volt_lists():
     bin_wave = scope.query_binary_values('curve?', datatype='b', container=np.array)
 
     # retrieve scaling factors
-    wfm_record = int(scope.query('wfmoutpre:nr_pt?'))
+    nr_pt = int(scope.query('wfmoutpre:nr_pt?'))
     pre_trig_record = int(scope.query('wfmoutpre:pt_off?'))
     t_scale = float(scope.query('wfmoutpre:xincr?'))
     t_sub = float(scope.query('wfmoutpre:xzero?')) # sub-sample trigger correction
@@ -68,14 +67,14 @@ def get_nanosec_volt_lists():
 
     # create scaled vectors
     # horizontal (time)
-    total_time = t_scale * wfm_record
+    duration = t_scale * nr_pt
     t_start = (-pre_trig_record * t_scale) + t_sub
-    t_stop = t_start + total_time
-    scaled_time = np.linspace(t_start, t_stop, num=wfm_record, endpoint=False)
+    t_stop = t_start + duration
+    scaled_time = np.linspace(t_start, t_stop, num=nr_pt, endpoint=False)
     # vertical (voltage)
     unscaled_wave = np.array(bin_wave, dtype='double') # data type conversion
-    scaled_wave = (unscaled_wave - v_pos) * v_scale + v_off
+    scaled_volt = (unscaled_wave - v_pos) * v_scale + v_off
     
-    print(scaled_time, scaled_wave)
+    scaled_time_nanoseconds = numpy.asarray(scaled_time) * 1e9
 
-    return scaled_time, scaled_wave
+    return scaled_time_nanoseconds, scaled_volt

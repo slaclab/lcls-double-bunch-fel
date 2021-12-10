@@ -1,4 +1,4 @@
-from bokeh.models import Div, Button, ColumnDataSource, Slider
+from bokeh.models import Div, Button, ColumnDataSource
 from bokeh.layouts import column, row, grid
 from bokeh.plotting import figure
 from functools import partial
@@ -23,7 +23,7 @@ class PulserPanel:
         self.pulserscope_image.text = img_tag
         
     def plot_pulserscope(self):
-        sec_list, volt_list = scope.pulserscope.get()
+        sec_list, volt_list = scope.pulserscope.get_nanosec_volt_lists()
         self.pulserscope_figure_source.data = dict(x = sec_list, y = volt_list)
         
     def get_controls(self):

@@ -1,3 +1,5 @@
+import h5py
+import time
 from bokeh.models import Div, Button, ColumnDataSource, Slider
 from bokeh.layouts import column, row, grid
 from bokeh.models import Range1d, Spinner, TextAreaInput
@@ -8,15 +10,20 @@ import scope.awgscope
 import scope.awgscope_image
 import scope.pulserscope
 import scope.pulserscope_image
-import h5py
 import panel.awg_panel
 import panel.pulser_panel
-import time
+import panel.functiongenerator_panel
 
 class Panel:
     def __init__(self, multipulse):
+        # We want one panel to control the AWG directly, which then controls the amplifiers.
         self.awg_panel = panel.awg_panel.AWGPanel(multipulse)
+        
+        # We want to control oscilloscope on the pulser.
         self.pulser_panel = panel.pulser_panel.PulserPanel()
+        
+        # This function generator is for the pulser. Maybe wiser to put it in pulser_panel.
+        self.functiongenerator_panel = panel.functiongenerator_panel.FunctionGeneratorPanel()
         
         self.number_of_traces = 1
         self.comment = ''
@@ -28,18 +35,16 @@ class Panel:
         self.server.io_loop.stop()
         
     def save(self):
-        # Save the lot. Maybe more granular saving would be desirable.
+        # Save the lot. We want the parameters of the pulse, and traces of all scopes.
         # Some boring file format. Make it readable.
         filename = time.strftime('%Y-%m-%d-%H-%M-%S')
         savefile = h5py.File(filename, 'w')
         
+        savefile.attrs['comment'] = self.comment
+        savefile.attrs['time'] = time.time()
+        
         self.awg_panel.addto(savefile, self.number_of_traces)
         self.pulser_panel.addto(savefile, self.number_of_traces)
-        
-        # some random dataset to store non-specific info
-        attrs = savefile.create_dataset('attrs', (0,0))
-        attrs.attrs['comment'] = self.comment
-        attrs.attrs['time'] = time.time()
         
         print('Done saving traces.')
         savefile.close()
@@ -67,9 +72,11 @@ class Panel:
         
         pulserscope_figure, pulserscope_image, plot_pulserscope_button, pulserscope_image_button = self.pulser_panel.get_controls()
         
-        left = column(stop_everything_button, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_awgscope_button, awgscope_image_button, plot_pulserscope_button, pulserscope_image_button, row(number_of_traces_spinner, comment_box), save_button)
+        delay_inputbox =self. functiongenerator_panel.get_controls()
         
-        right = column(preview_figure, awgscope_figure, awgscope_image, pulserscope_figure, pulserscope_image)
+        left = column(stop_everything_button, delay_inputbox, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_awgscope_button, awgscope_image_button, plot_pulserscope_button, pulserscope_image_button, row(number_of_traces_spinner, comment_box), save_button)
+        
+        right = column(preview_figure, awgscope_figure, pulserscope_figure, awgscope_image, pulserscope_image)
 
         doc.add_root(row(left, right))
         

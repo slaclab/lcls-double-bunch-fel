@@ -1,4 +1,4 @@
-from bokeh.models import Div, Button, ColumnDataSource, Slider
+from bokeh.models import Div, Button, ColumnDataSource
 from bokeh.layouts import column, row, grid
 from bokeh.plotting import figure
 import base64

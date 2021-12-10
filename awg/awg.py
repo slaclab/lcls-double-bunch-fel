@@ -79,7 +79,7 @@ def send(multipulse):
     rc = inst.send_scpi_cmd(cmd)
 
     # Set the trigger level.
-    # This was originally 0, we had to change to 0.1.
+    # This was originally 0. 0.1 minimum, 0.25 best jitter.
     cmd = ':TRIG:LEV 0.25'
     rc = inst.send_scpi_cmd(cmd)
 
@@ -92,7 +92,7 @@ def send(multipulse):
     rc = inst.send_scpi_cmd(cmd)
 
     # I believe there is no :TRIG:STAT command.
-    #cmd = ':TRIG:STAT ON'
+    cmd = ':TRIG:STAT ON'
     #rc = inst.send_scpi_cmd(cmd)
 
     # Disable continuous (aka free-running) mode, and force trigger mode.

@@ -10,7 +10,7 @@ def get():
     # 1. Test ping that IP address.
     
     rm = pyvisa.ResourceManager()
-    scope = rm.open_resource('TCPIP::192.168.1.124::INSTR')
+    scope = rm.open_resource('TCPIP::192.168.1.101::INSTR')
 
     scope.write("HARDCopy:PORT FILE;")
     scope.write("EXPort:FORMat PNG")
