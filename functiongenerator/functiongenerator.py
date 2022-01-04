@@ -28,7 +28,7 @@ class FunctionGenerator:
         resp = resource.query('DLAY?2')
         print(resp)
         
-        delay_command = f'DLAY 2,0,{delay_nanoseconds}e-9'
+        delay_command = f'DLAY 4,0,{delay_nanoseconds}e-9'
         resp = resource.write(delay_command)
         
         print(resp)

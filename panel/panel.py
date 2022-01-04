@@ -44,7 +44,7 @@ class Panel:
         savefile.attrs['time'] = time.time()
         
         self.awg_panel.addto(savefile, self.number_of_traces)
-        self.pulser_panel.addto(savefile, self.number_of_traces)
+        # self.pulser_panel.addto(savefile, self.number_of_traces)
         
         print('Done saving traces.')
         savefile.close()
@@ -59,7 +59,7 @@ class Panel:
         stop_everything_button = Button(label='Stop everything')
         stop_everything_button.on_click(self.stop_everything)
         
-        number_of_traces_spinner = Spinner(title = 'Number of traces to save', value = 1, low = 1, high = 50, step = 1)
+        number_of_traces_spinner = Spinner(title = 'Number of traces to save', value = 1, step = 1)
         number_of_traces_spinner.on_change('value', self.change_number_of_traces)
         
         comment_box = TextAreaInput(rows = 1, title = 'Comment')
@@ -72,7 +72,7 @@ class Panel:
         
         pulserscope_figure, pulserscope_image, plot_pulserscope_button, pulserscope_image_button = self.pulser_panel.get_controls()
         
-        delay_inputbox =self. functiongenerator_panel.get_controls()
+        delay_inputbox = self.functiongenerator_panel.get_controls()
         
         left = column(stop_everything_button, delay_inputbox, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_awgscope_button, awgscope_image_button, plot_pulserscope_button, pulserscope_image_button, row(number_of_traces_spinner, comment_box), save_button)
         

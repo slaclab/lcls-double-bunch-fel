@@ -9,10 +9,12 @@ import time
 import numpy
 import pyvisa
 
-def get_nanosec_volt_lists():
-    # Get nanosecond-Volt data from Tektronix TDS 7154.
+def get_nanosec_volt_lists(channel):
+    # Get data from the short repetition rate pulser oscilloscope.
+    # Tektronix TDS 7154.
     # Previously we used floppy disks.
     
+    # Needs to be set manually.
     visa_address = 'TCPIP::192.168.1.101::INSTR'
 
     rm = pyvisa.ResourceManager()
@@ -24,24 +26,17 @@ def get_nanosec_volt_lists():
     #scope.write('*cls') # clear ESR
     scope.write('header OFF') # disable attribute echo in replies
 
-    print(scope.query('*idn?'))
+    print('Getting trace from', scope.query('*idn?'))
 
     # default setup
     r = scope.query('*opc?') # sync
-    
-    r = scope.query('*opc?')
-
-    # acquisition
-    #scope.write('acquire:state OFF') # stop
-    #scope.write('acquire:stopafter SEQUENCE;state ON') # single
-    #r = scope.query('*opc?')
 
     # curve configuration
-    scope.write('data:source CH1')
+    scope.write('data:source {0}'.format(channel))
     scope.write('data:start 1')
     acq_record = int(scope.query('horizontal:recordlength?'))
     scope.write('data:stop {}'.format(acq_record))
-    #scope.write('wfmoutpre:byt_n 1') # 1 byte per sample
+    scope.write('wfmoutpre:byt_n 2')
 
     # data query
     bin_wave = scope.query_binary_values('curve?', datatype='b', container=np.array)

@@ -39,7 +39,7 @@ class AWGPanel:
         self.awgscope_image.text = img_tag
         
     def plot_awgscope(self):
-        sec_list, volt_list = scope.awgscope.get_nanosec_volt_lists()
+        sec_list, volt_list = scope.awgscope.get_nanosec_volt_lists('CH3')
         self.awgscope_figure_source.data = dict(x = sec_list, y = volt_list)
         
     def get_controls(self):
@@ -65,22 +65,25 @@ class AWGPanel:
         return self.preview_figure, self.awgscope_figure, self.awgscope_image, stop_button, send_button, preview_button, plot_awgscope_button, awgscope_image_button, multipulse_column, add_pulse_button
         
     def addto(self, savefile, number_of_traces):
-        
         preview_x, preview_y = self.multipulse.get_preview_waveform()
         savefile.create_dataset('preview_x', (len(preview_x),), data = preview_x)
         savefile.create_dataset('preview_y', (len(preview_y),), data = preview_y)
+        
         waveform_x, waveform_y = self.multipulse.get_awg_waveform()
         savefile.create_dataset('awgscope_x', (len(waveform_x),), data = waveform_x)
         savefile.create_dataset('awgscope_y', (len(waveform_y),), data = waveform_y)
-
-        awgscope_traces_x = list()
-        awgscope_traces_y = list()
-        awgscope_x, awgscope_y = scope.awgscope.get_nanosec_volt_lists()
         
-        for index in range(number_of_traces):
-            awgscope_x, awgscope_y = scope.awgscope.get_nanosec_volt_lists()
-            awgscope_traces_x.append(awgscope_x)
-            awgscope_traces_y.append(awgscope_y)
+        channels = ['CH2', 'CH3', 'CH4']
 
-        savefile.create_dataset('awgscope_traces_x', (number_of_traces,len(awgscope_x)), data = awgscope_traces_x)
-        savefile.create_dataset('awgscope_traces_y', (number_of_traces,len(awgscope_y)), data = awgscope_traces_y)
+        for c in channels:
+            awgscope_traces_x = list()
+            awgscope_traces_y = list()
+            awgscope_x, awgscope_y = scope.awgscope.get_nanosec_volt_lists(c)
+        
+            for index in range(number_of_traces):
+                awgscope_x, awgscope_y = scope.awgscope.get_nanosec_volt_lists(c)
+                awgscope_traces_x.append(awgscope_x)
+                awgscope_traces_y.append(awgscope_y)
+
+            savefile.create_dataset('awgscope_traces_x_' + c, (number_of_traces,len(awgscope_x)), data = awgscope_traces_x)
+            savefile.create_dataset('awgscope_traces_y_' + c, (number_of_traces,len(awgscope_y)), data = awgscope_traces_y)

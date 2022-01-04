@@ -18,13 +18,7 @@ def send(multipulse):
     # Set the sample frequency to 1 GSa/s. (p. 66).
     # Minimum is 1E9 and maximum is 9E9. Units are samples per second.
     # The arbitrary waveform will be sampled at 1 GSa/s.
-    sampleRateDAC = 1E9
-    print('Sample Clock Frequency {0}'.format(sampleRateDAC))
-    cmd = ':FREQ:RAST {0}'.format(sampleRateDAC)
-    rc = inst.send_scpi_cmd(cmd)
-
-    # Enable external clock EXT from the function generator.
-    cmd = "FREQ:SOUR EXT"
+    cmd = ':FREQ:RAST 1E9'
     rc = inst.send_scpi_cmd(cmd)
 
     # Get the available memory in bytes of wavform-data (per DDR):
@@ -49,7 +43,7 @@ def send(multipulse):
     # is defined by :SOUR:FREQ:RAST (p. 66).
     cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(y))
     rc = inst.send_scpi_cmd(cmd)
-
+    
     # Select the segment
     cmd = ':TRAC:SEL {0}'.format(segnum)
     rc = inst.send_scpi_cmd(cmd)
@@ -57,13 +51,16 @@ def send(multipulse):
     # Increase the timeout before writing binary-data:
     inst.timeout = 30000
     inst.write_binary_data('*OPC?; :TRAC:DATA', y)
-    resp = inst.send_scpi_query(':SYST:ERR?')
-    print('Response', resp)
+    
     # Set normal timeout
     inst.timeout = 10000
 
     # Play the specified segment at the selected channel:
     cmd = ':SOUR:FUNC:MODE:SEGM {0}'.format(segnum)
+    rc = inst.send_scpi_cmd(cmd)
+    
+    # Enable external clock EXT from the function generator.
+    cmd = "FREQ:SOUR EXT"
     rc = inst.send_scpi_cmd(cmd)
 
     # Enable Ext Trigger
@@ -73,13 +70,13 @@ def send(multipulse):
     # Select the external trigger 1.
     cmd = ':TRIG:SEL EXT1'
     rc = inst.send_scpi_cmd(cmd)
-
+    
     # Magic thing that reduces jitter.
     cmd = 'TRIG:LTJ ON'
     rc = inst.send_scpi_cmd(cmd)
 
     # Set the trigger level.
-    # This was originally 0. 0.1 minimum, 0.25 best jitter.
+    # This was originally 0. 0 doesn't work, 0.1 minimum, 0.2 always works, 0.25 doesn't work sometimes
     cmd = ':TRIG:LEV 0.25'
     rc = inst.send_scpi_cmd(cmd)
 
@@ -93,7 +90,7 @@ def send(multipulse):
 
     # I believe there is no :TRIG:STAT command.
     cmd = ':TRIG:STAT ON'
-    #rc = inst.send_scpi_cmd(cmd)
+    rc = inst.send_scpi_cmd(cmd)
 
     # Disable continuous (aka free-running) mode, and force trigger mode.
     cmd = ':INIT:CONT OFF'
