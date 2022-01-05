@@ -24,37 +24,41 @@ class Pulse:
     
         return x, y
     
-    def change_amplitude(self, attr, old, new):
+    def change_amplitude(self, plot_preview, attr, old, new):
         self.amplitude = new
+        plot_preview()
         
-    def change_x_offset(self, attr, old, new):
+    def change_x_offset(self, plot_preview, attr, old, new):
         self.x_offset = new
+        plot_preview()
         
-    def change_linear_correction_coefficient(self, attr, old, new):
+    def change_linear_correction_coefficient(self, plot_preview, attr, old, new):
         self.linear_correction_coefficient = new
+        plot_preview()
         
-    def change_cubic_correction_coefficient(self, attr, old, new):
+    def change_cubic_correction_coefficient(self, plot_preview, attr, old, new):
         self.cubic_correction_coefficient = new 
+        plot_preview()
     
-    def get_control_row(self):
+    def get_control_row(self, plot_preview):
         amplitude_slider = Slider(start = -1, end = 1, value = self.amplitude, step = 0.01, title = "Amplitude")
-        amplitude_slider.on_change('value', self.change_amplitude)
+        amplitude_slider.on_change('value', partial(self.change_amplitude, plot_preview))
         
         x_offset_slider = Slider(start = 0, end = 200, value = self.x_offset, step = 1, title = "X Offset")
-        x_offset_slider.on_change('value', self.change_x_offset)
+        x_offset_slider.on_change('value', partial(self.change_x_offset, plot_preview))
         
         linear_correction_coefficient_slider = Slider(start = -0.5, end = 0,
                                                       value = self.linear_correction_coefficient,
                                                       step = 0.1,
                                                       title = 'Linear Coefficient')
-        linear_correction_coefficient_slider.on_change('value', self.change_linear_correction_coefficient)
+        linear_correction_coefficient_slider.on_change('value', partial(self.change_linear_correction_coefficient, plot_preview))
         
         cubic_correction_coefficient_slider = Slider(start = 0, end = 0.01,
                                                      value = self.cubic_correction_coefficient,
                                                      step = 0.001,
                                                      format = '0[.]000',
                                                      title = 'Cubic Coefficient')
-        cubic_correction_coefficient_slider.on_change('value', self.change_cubic_correction_coefficient)
+        cubic_correction_coefficient_slider.on_change('value', partial(self.change_cubic_correction_coefficient, plot_preview))
         
         therow = row(amplitude_slider, x_offset_slider, linear_correction_coefficient_slider, cubic_correction_coefficient_slider)
         therow.width = 800

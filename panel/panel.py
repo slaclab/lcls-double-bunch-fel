@@ -68,13 +68,13 @@ class Panel:
         save_button = Button(label='Save')
         save_button.on_click(self.save)
         
-        preview_figure, awgscope_figure, awgscope_image, stop_button, send_button, preview_button, plot_awgscope_button, awgscope_image_button, multipulse_column, add_pulse_button = self.awg_panel.get_controls()
+        preview_figure, awgscope_figure, awgscope_image, stop_button, send_button, plot_awgscope_button, awgscope_image_button, multipulse_column, add_pulse_button = self.awg_panel.get_controls()
         
         pulserscope_figure, pulserscope_image, plot_pulserscope_button, pulserscope_image_button = self.pulser_panel.get_controls()
         
         delay_inputbox = self.functiongenerator_panel.get_controls()
         
-        left = column(stop_everything_button, delay_inputbox, multipulse_column, add_pulse_button, send_button, stop_button, preview_button, plot_awgscope_button, awgscope_image_button, plot_pulserscope_button, pulserscope_image_button, row(number_of_traces_spinner, comment_box), save_button)
+        left = column(stop_everything_button, delay_inputbox, multipulse_column, add_pulse_button, send_button, stop_button, plot_awgscope_button, awgscope_image_button, plot_pulserscope_button, pulserscope_image_button, row(number_of_traces_spinner, comment_box), save_button)
         
         right = column(preview_figure, awgscope_figure, pulserscope_figure, awgscope_image, pulserscope_image)
 

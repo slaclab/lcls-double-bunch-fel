@@ -11,39 +11,39 @@ class Multipulse:
                               pulse.pulse.Pulse(-0.4, 100),
                               pulse.pulse.Pulse(-0.9, 150)]
         
-    def add_default_pulse(self, multipulse_column):  
+    def add_default_pulse(self, multipulse_column, plot_preview):  
         default_pulse = pulse.pulse.Pulse(0, 0)
         index = len(self.list_of_pulse)
         self.list_of_pulse.append(default_pulse)
         remove_button = Button(label = 'Remove')
-        remove_button.on_click(partial(self.remove_pulse, multipulse_column, index))
-        control_row = default_pulse.get_control_row()
+        remove_button.on_click(partial(self.remove_pulse, multipulse_column, index, plot_preview))
+        control_row = default_pulse.get_control_row(plot_preview)
         control_row.children.append(remove_button)
         multipulse_column.children.append(control_row)
         
-    def get_add_button(self, multipulse_column):
+    def get_add_button(self, multipulse_column, plot_preview):
         add_pulse_button = Button(label = 'Add pulse')
-        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column))
+        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column, plot_preview))
         
         return add_pulse_button
         
-    def add_controls_to(self, multipulse_column):        
+    def add_controls_to(self, multipulse_column, plot_preview):        
         for index, pulse in enumerate(self.list_of_pulse):
             remove_button = Button(label = 'Remove')
-            remove_button.on_click(partial(self.remove_pulse, multipulse_column, index))
-            control_row = pulse.get_control_row()
+            remove_button.on_click(partial(self.remove_pulse, multipulse_column, index, plot_preview))
+            control_row = pulse.get_control_row(plot_preview)
             control_row.children.append(remove_button)
 
             multipulse_column.children.append(control_row)
     
-    def remove_pulse(self, multipulse_column, index):
+    def remove_pulse(self, multipulse_column, index, plot_preview):
         if len(self.list_of_pulse) > 1:
             del self.list_of_pulse[index]
             # The indices break on the other ones.
             # Just delete everything and remake the controls so the indices are correct.
             # Not exquisite programming.
             multipulse_column.children.clear()
-            self.add_controls_to(multipulse_column)
+            self.add_controls_to(multipulse_column, plot_preview)
         
     def get_awg_waveform(self):
         # Get the waveform to send to the AWG.

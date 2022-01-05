@@ -49,9 +49,6 @@ class AWGPanel:
         send_button = Button(label='Send Waveform')
         send_button.on_click(partial(awg.awg.send, self.multipulse))
         
-        preview_button = Button(label='Preview Waveform')
-        preview_button.on_click(self.plot_preview)
-        
         plot_awgscope_button = Button(label='Plot AWG Scope')
         plot_awgscope_button.on_click(self.plot_awgscope)
         
@@ -59,10 +56,10 @@ class AWGPanel:
         awgscope_image_button.on_click(self.get_awgscope_image)
         
         multipulse_column = column()
-        add_pulse_button = self.multipulse.get_add_button(multipulse_column)
-        self.multipulse.add_controls_to(multipulse_column)  
+        add_pulse_button = self.multipulse.get_add_button(multipulse_column, self.plot_preview)
+        self.multipulse.add_controls_to(multipulse_column, self.plot_preview)
         
-        return self.preview_figure, self.awgscope_figure, self.awgscope_image, stop_button, send_button, preview_button, plot_awgscope_button, awgscope_image_button, multipulse_column, add_pulse_button
+        return self.preview_figure, self.awgscope_figure, self.awgscope_image, stop_button, send_button, plot_awgscope_button, awgscope_image_button, multipulse_column, add_pulse_button
         
     def addto(self, savefile, number_of_traces):
         preview_x, preview_y = self.multipulse.get_preview_waveform()
