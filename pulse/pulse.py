@@ -13,16 +13,16 @@ class Pulse:
     def get_pulse(self):
         length = 4096
         start = -10
-        end = start + length - 1
-        x = numpy.linspace(start, end, length)
+        end = start + length
+        x = numpy.arange(start, end)
         x = x - self.x_offset
         
-        y = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) *
+        w = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) *
              (1 + self.linear_correction_coefficient*x + self.cubic_correction_coefficient*x**3) )
             
-        y = y * self.amplitude / 1.8
+        w = w * self.amplitude / 1.8
     
-        return x, y
+        return w
     
     def change_amplitude(self, plot_preview, attr, old, new):
         self.amplitude = new
@@ -41,10 +41,10 @@ class Pulse:
         plot_preview()
     
     def get_control_row(self, plot_preview):
-        amplitude_slider = Slider(start = -1, end = 1, value = self.amplitude, step = 0.01, title = "Amplitude")
+        amplitude_slider = Slider(start = -1, end = 1, value = self.amplitude, step = 0.01, title = "Amplitude (V)")
         amplitude_slider.on_change('value', partial(self.change_amplitude, plot_preview))
         
-        x_offset_slider = Slider(start = 0, end = 200, value = self.x_offset, step = 1, title = "X Offset")
+        x_offset_slider = Slider(start = 0, end = 200, value = self.x_offset, step = 1, title = "X Offset (ns)")
         x_offset_slider.on_change('value', partial(self.change_x_offset, plot_preview))
         
         linear_correction_coefficient_slider = Slider(start = -0.5, end = 0,

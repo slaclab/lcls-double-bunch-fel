@@ -1,42 +1,52 @@
 import h5py
 import time
-from bokeh.models import Div, Button, ColumnDataSource, Slider
-from bokeh.layouts import column, row, grid
-from bokeh.models import Range1d, Spinner, TextAreaInput
+from bokeh.models import Button
+from bokeh.layouts import column, row
+from bokeh.models import Spinner, TextAreaInput
 from bokeh.server.server import Server
 import pulse.multipulse
 import awg.awg
-import scope.awgscope
-import scope.awgscope_image
-import scope.pulserscope
-import scope.pulserscope_image
 import panel.awg_panel
 import panel.pulser_panel
 import panel.functiongenerator_panel
 
 class Panel:
     def __init__(self, multipulse):
-        # We want one panel to control the AWG directly, which then controls the amplifiers.
+        # The function generator that triggers the AWG waveform.
+        self.functiongenerator_panel = panel.functiongenerator_panel.FunctionGeneratorPanel()
+        
+        # The oscilloscope connected to the AWG.
         self.awg_panel = panel.awg_panel.AWGPanel(multipulse)
         
-        # We want to control oscilloscope on the pulser.
-        self.pulser_panel = panel.pulser_panel.PulserPanel()
+        # The oscilloscope connected to the amplifier.
+        # ...
         
-        # This function generator is for the pulser. Maybe wiser to put it in pulser_panel.
-        self.functiongenerator_panel = panel.functiongenerator_panel.FunctionGeneratorPanel()
+        # The oscilloscope connected to the pulser.
+        self.pulser_panel = panel.pulser_panel.PulserPanel()
         
         self.number_of_traces = 1
         self.comment = ''
         
     def stop_everything(self):
+        # Stop the AWG waveform and exit this program. The program must be run again.
         awg.awg.stop()
         self.server.stop()
         self.server.unlisten()
         self.server.io_loop.stop()
         
+    def change_number_of_traces(self, attr, old, new):
+        self.number_of_traces = new
+        
+    def change_comment(self, attr, old, new):
+        self.comment = new
+        
     def save(self):
-        # Save the lot. We want the parameters of the pulse, and traces of all scopes.
-        # Some boring file format. Make it readable.
+        # Save to one HDF5 file.
+        # - The parameters of the pulse, and traces of all scopes.
+        # - The waveform sent from the AWG to the amplifier. Units of nanosecond - Volt.
+        # - The delay of the function generator that triggers the pulser.
+        # - The comment for the file
+
         filename = time.strftime('%Y-%m-%d-%H-%M-%S')
         savefile = h5py.File(filename, 'w')
         
@@ -48,12 +58,6 @@ class Panel:
         
         print('Done saving traces.')
         savefile.close()
-        
-    def change_number_of_traces(self, attr, old, new):
-        self.number_of_traces = new
-        
-    def change_comment(self, attr, old, new):
-        self.comment = new
         
     def start_controls(self, doc):
         stop_everything_button = Button(label='Stop everything')

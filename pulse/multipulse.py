@@ -47,11 +47,15 @@ class Multipulse:
         
     def get_awg_waveform(self):
         # Get the waveform to send to the AWG.
-        x, y = self.list_of_pulse[0].get_pulse()
+        # The waveform is 4096 floats in the range  [0, 2^16].
+        # The range [0, 2^16] maps to [-0.25 Volt, 0.25 Volt].
+        # The waveform is sampled at 1.428 GHz. 
+        
+        w = self.list_of_pulse[0].get_pulse()
         
         for pulse in self.list_of_pulse[1:]:
-            next_x, next_y = pulse.get_pulse()
-            y += next_y
+            next_waveform = pulse.get_pulse()
+            w += next_waveform
             
         # Make the waveform compatible with the AWG input parameters.
         # Basically, a big array of integers with range from 0 to 2^16.
@@ -62,27 +66,29 @@ class Multipulse:
         quarter_dac = 2 ** 14
 
         # Move the "0 Volt" value to 2^15.
-        y = y * quarter_dac + half_dac
+        w = w * quarter_dac + half_dac
         # Round the double to the nearest digit.
-        y = numpy.round(y)
+        w = numpy.round(w)
         # These values should be from 0 to 2^16. Clip for safety.
-        y = numpy.clip(y, 0, max_dac)
+        w = numpy.clip(w, 0, max_dac)
         # Convert from double to int.
-        y = y.astype(numpy.uint16)
+        w = w.astype(numpy.uint16)
             
-        return x, y
+        return w
     
     def get_preview_waveform(self):
-        # Scale the input waveform to units of nanosecond and Volt to preview 
-        # what the output waveform should look like in theory.  
-        x, y = self.get_awg_waveform()
+        # Preview what the AWG will output to the amplifier.
+        # Units of nanosecond - Volt.
         
-        # Each sample is scaled by 1 Gigasample per second. Therefore the domain x
-        # is in units of nanoseconds, which is what we want to plot. But the domain is shifted
-        # to -10 so shift it back.
-        x = x + 10
+        # Scale the waveform to units of nanosecond and Volt to preview 
+        # what the output waveform should look like in theory.
+        w = self.get_awg_waveform()
+        
+        # The time between each x data point is 1 / 1.428 GHz.
+        # This works, somehow.
+        x = numpy.arange(0, len(w)) / 1.428
         
         # The range [0, 2^16] maps to the range [-0.25 Volt, 0.25 Volt].
-        y = (y / 2 ** 17) - 0.25
+        w = (w / 2 ** 17) - 0.25
         
-        return x, y
+        return x, w

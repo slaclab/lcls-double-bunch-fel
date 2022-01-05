@@ -12,14 +12,13 @@ def get_scope_lib():
     
     return scope, lib
     
-def get_nanosec_volt_lists(channel):
+def get_nanosec_volt_lists():
     # Given the pyvisa scope, get its curve where domain is nanoseconds and range is volts. It is 
     # important that the time axis is correct.
     
     scope, lib = get_scope_lib()
     
-    print(channel)
-    scope.write('DATA:SOURCE {0}'.format(channel))
+    scope.write('DATA:SOURCE CH1')
     scope.write('DATA:WIDTH 1')
     scope.write('DATA:ENC RPB')
     
@@ -29,7 +28,6 @@ def get_nanosec_volt_lists(channel):
     xincr = float(scope.query('WFMPRE:XINCR?'))
     xzero = float(scope.query('WFMPRE:XZERO?'))
     
-    # Ask the scope for its trace on channel 1.
     scope.write("curve?")
     data = scope.read_raw()
     headerlen = 2 + int(data[1])

@@ -6,6 +6,7 @@ from functools import partial
 
 from bokeh.models import Range1d, Spinner, TextAreaInput
 import scope.awgscope
+import scope.awgscope_image
 import awg.awg
 
 class AWGPanel:
@@ -39,7 +40,7 @@ class AWGPanel:
         self.awgscope_image.text = img_tag
         
     def plot_awgscope(self):
-        sec_list, volt_list = scope.awgscope.get_nanosec_volt_lists('CH3')
+        sec_list, volt_list = scope.awgscope.get_nanosec_volt_lists()
         self.awgscope_figure_source.data = dict(x = sec_list, y = volt_list)
         
     def get_controls(self):
@@ -47,7 +48,7 @@ class AWGPanel:
         stop_button.on_click(awg.awg.stop)
         
         send_button = Button(label='Send Waveform')
-        send_button.on_click(partial(awg.awg.send, self.multipulse))
+        send_button.on_click(partial(awg.awg.start, self.multipulse))
         
         plot_awgscope_button = Button(label='Plot AWG Scope')
         plot_awgscope_button.on_click(self.plot_awgscope)

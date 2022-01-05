@@ -1,6 +1,6 @@
 from awg.tabor.tevisainst import TEVisaInst
 
-def send(multipulse):
+def start(multipulse):
     # Assuming this code runs on the Windows machine inside the AWG.
     inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
     inst = TEVisaInst(inst_addr)
@@ -14,20 +14,22 @@ def send(multipulse):
     print("Number of channels: " + resp)
     resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
     print("Max segment number: " + resp)
+    resp = inst.send_scpi_cmd("*CLS")
+    print("CLS response", resp)
+    resp = inst.send_scpi_query(':SYST:ERR?')
+    print('CLS error', resp)
     
-    # Set the sample frequency to 1 GSa/s. (p. 66).
-    # Minimum is 1E9 and maximum is 9E9. Units are samples per second.
-    # The arbitrary waveform will be sampled at 1 GSa/s.
-    cmd = ':FREQ:RAST 1E9'
-    rc = inst.send_scpi_cmd(cmd)
+    # I thought it was the rate at which the data points on the waveform were sampled, but this is wrong,
+    # the rate at which the data points are sampled is 1.428 GHz which is the clock rate. What does this do?
+    #cmd = ':FREQ:RAST 1E9'
+    #rc = inst.send_scpi_cmd(cmd)
+    #resp = inst.send_scpi_query(':SYST:ERR?')
+    #print('Rast response', resp)
 
     # Get the available memory in bytes of wavform-data (per DDR):
     resp = inst.send_scpi_query(":TRACe:FREE?")
     arbmem_capacity = int(resp)
     print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
-
-    # Get the waveform to send to the FPGA's memory.
-    x, y = multipulse.get_awg_waveform()
 
     # Set the channel and segment to send the waveform to.
     ch = 1
@@ -37,29 +39,31 @@ def send(multipulse):
     # Select channel.
     cmd = ':INST:CHAN {0}'.format(ch)
     rc = inst.send_scpi_cmd(cmd)
+    
+    # Get the waveform to send to the FPGA's memory.
+    waveform = multipulse.get_awg_waveform()
 
     # Select segment and the number of samples to send to the segment. The clock samples
     # these data data points sequentially. The rate at which this sample is played 
     # is defined by :SOUR:FREQ:RAST (p. 66).
-    cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(y))
+    cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(waveform))
     rc = inst.send_scpi_cmd(cmd)
     
     # Select the segment
     cmd = ':TRAC:SEL {0}'.format(segnum)
     rc = inst.send_scpi_cmd(cmd)
 
-    # Increase the timeout before writing binary-data:
-    inst.timeout = 30000
-    inst.write_binary_data('*OPC?; :TRAC:DATA', y)
-    
-    # Set normal timeout
+    # Mean time to write the waveform is 0.5 seconds. Set to 10 seconds.
     inst.timeout = 10000
+    inst.write_binary_data('*OPC?; :TRAC:DATA', waveform)
+    resp = inst.send_scpi_query(':SYST:ERR?')
+    print('Write error', resp)
 
     # Play the specified segment at the selected channel:
     cmd = ':SOUR:FUNC:MODE:SEGM {0}'.format(segnum)
     rc = inst.send_scpi_cmd(cmd)
     
-    # Enable external clock EXT from the function generator.
+    # Enable external clock EXT from the Agilent N5181A.
     cmd = "FREQ:SOUR EXT"
     rc = inst.send_scpi_cmd(cmd)
 
@@ -88,7 +92,7 @@ def send(multipulse):
     cmd = ':TRIG:IDLE DC'
     rc = inst.send_scpi_cmd(cmd)
 
-    # I believe there is no :TRIG:STAT command.
+    # Turn the trigger on.
     cmd = ':TRIG:STAT ON'
     rc = inst.send_scpi_cmd(cmd)
 
