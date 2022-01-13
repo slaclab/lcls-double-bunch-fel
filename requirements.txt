@@ -1,0 +1,4 @@
+bokeh
+jupyterlab
+h5py
+numpy

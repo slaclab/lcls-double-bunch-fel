@@ -17,7 +17,7 @@ class AWGPanel:
         self.preview_figure_source.data = dict(x=[], y=[])
         self.preview_figure = figure(title = 'Preview', x_axis_label = 'Nanoseconds', y_axis_label = 'Volt')
         self.preview_figure.line(source = self.preview_figure_source)
-        self.preview_figure.x_range = Range1d(-20, 400)
+        self.preview_figure.x_range = Range1d(0, 400)
         self.preview_figure.height = 300
     
         self.awgscope_figure_source = ColumnDataSource()
@@ -40,8 +40,9 @@ class AWGPanel:
         self.awgscope_image.text = img_tag
         
     def plot_awgscope(self):
-        sec_list, volt_list = scope.awgscope.get_nanosec_volt_lists()
-        self.awgscope_figure_source.data = dict(x = sec_list, y = volt_list)
+        nanosec_list, volt_list = scope.awgscope.get_nanosec_volt_lists('CH1')
+        nanosec_list -= 683
+        self.awgscope_figure_source.data = dict(x = nanosec_list, y = volt_list)
         
     def get_controls(self):
         stop_button = Button(label='Stop Waveform')
@@ -56,24 +57,24 @@ class AWGPanel:
         awgscope_image_button = Button(label = 'Get AWG Scope Image')
         awgscope_image_button.on_click(self.get_awgscope_image)
         
-        multipulse_column = column()
-        add_pulse_button = self.multipulse.get_add_button(multipulse_column, self.plot_preview)
-        self.multipulse.add_controls_to(multipulse_column, self.plot_preview)
+        multipulse_column, add_pulse_button = self.multipulse.get_controls(self.plot_preview)
         
         return self.preview_figure, self.awgscope_figure, self.awgscope_image, stop_button, send_button, plot_awgscope_button, awgscope_image_button, multipulse_column, add_pulse_button
         
     def addto(self, savefile, number_of_traces):
+        waveform = self.multipulse.get_awg_waveform()
+        savefile.create_dataset('awg_waveform', (len(waveform),), data = waveform)
+        
         preview_x, preview_y = self.multipulse.get_preview_waveform()
         savefile.create_dataset('preview_x', (len(preview_x),), data = preview_x)
         savefile.create_dataset('preview_y', (len(preview_y),), data = preview_y)
         
-        waveform_x, waveform_y = self.multipulse.get_awg_waveform()
-        savefile.create_dataset('awgscope_x', (len(waveform_x),), data = waveform_x)
-        savefile.create_dataset('awgscope_y', (len(waveform_y),), data = waveform_y)
-        
-        channels = ['CH2', 'CH3', 'CH4']
+        channels = ['CH1']
 
         for c in channels:
+            # Select the channel and take screenshot it.
+            
+            
             awgscope_traces_x = list()
             awgscope_traces_y = list()
             awgscope_x, awgscope_y = scope.awgscope.get_nanosec_volt_lists(c)

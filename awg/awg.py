@@ -1,44 +1,39 @@
 from awg.tabor.tevisainst import TEVisaInst
+import time
+import socket
+
+def query(instrument, query_string):
+    resp = instrument.send_scpi_query(query_string)
+    print(query_string, resp)
+    return resp
+    
+def command(instrument, command_string):
+    resp = instrument.send_scpi_cmd(command_string)
+    resp = instrument.send_scpi_query(':SYST:ERR?')
+    print(command_string, 'error', resp)
 
 def start(multipulse):
-    # Assuming this code runs on the Windows machine inside the AWG.
-    inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
-    inst = TEVisaInst(inst_addr)
-
-    # Always print debug info.
-    resp = inst.send_scpi_query('*IDN?')
-    print('Connected to: ' + resp)
-    resp = inst.send_scpi_query(":SYST:iNF:MODel?")
-    print("Model: " + resp)
-    resp = inst.send_scpi_query(":INST:CHAN? MAX")
-    print("Number of channels: " + resp)
-    resp = inst.send_scpi_query(":TRACe:SELect:SEGMent? MAX")
-    print("Max segment number: " + resp)
-    resp = inst.send_scpi_cmd("*CLS")
-    print("CLS response", resp)
-    resp = inst.send_scpi_query(':SYST:ERR?')
-    print('CLS error', resp)
-    
-    # I thought it was the rate at which the data points on the waveform were sampled, but this is wrong,
-    # the rate at which the data points are sampled is 1.428 GHz which is the clock rate. What does this do?
-    #cmd = ':FREQ:RAST 1E9'
-    #rc = inst.send_scpi_cmd(cmd)
-    #resp = inst.send_scpi_query(':SYST:ERR?')
-    #print('Rast response', resp)
-
-    # Get the available memory in bytes of wavform-data (per DDR):
-    resp = inst.send_scpi_query(":TRACe:FREE?")
-    arbmem_capacity = int(resp)
-    print("Available memory per DDR: {0:,} wave-bytes".format(arbmem_capacity))
-
-    # Set the channel and segment to send the waveform to.
+    # The address, channel, segment to send the waveform to.
+    ip = socket.gethostbyname('UFK21-9')
+    addr = f'TCPIP::{ip}::5025::SOCKET'
+    print(addr)
     ch = 1
     segnum = 1
-    print('Download wave to segment {0} of channel {1}'.format(segnum, ch))
+    
+    start_time = time.time()
+    instrument = TEVisaInst(addr)
 
+    query(instrument, '*IDN?')
+    query(instrument, ":SYST:iNF:MODel?")
+    query(instrument, ":INST:CHAN? MAX")
+    query(instrument, ":TRACe:SELect:SEGMent? MAX")
+    command(instrument, "*CLS")
+
+    # Get the available memory in bytes of wavform-data (per DDR):
+    query(instrument, ":TRACe:FREE?")
+    
     # Select channel.
-    cmd = ':INST:CHAN {0}'.format(ch)
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':INST:CHAN {0}'.format(ch))
     
     # Get the waveform to send to the FPGA's memory.
     waveform = multipulse.get_awg_waveform()
@@ -46,73 +41,60 @@ def start(multipulse):
     # Select segment and the number of samples to send to the segment. The clock samples
     # these data data points sequentially. The rate at which this sample is played 
     # is defined by :SOUR:FREQ:RAST (p. 66).
-    cmd = ':TRAC:DEF {0}, {1}'.format(segnum, len(waveform))
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':TRAC:DEF {0}, {1}'.format(segnum, len(waveform)))
     
     # Select the segment
-    cmd = ':TRAC:SEL {0}'.format(segnum)
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':TRAC:SEL {0}'.format(segnum))
 
     # Mean time to write the waveform is 0.5 seconds. Set to 10 seconds.
-    inst.timeout = 10000
-    inst.write_binary_data('*OPC?; :TRAC:DATA', waveform)
-    resp = inst.send_scpi_query(':SYST:ERR?')
-    print('Write error', resp)
+    instrument.write_binary_data('*OPC?; :TRAC:DATA', waveform)
 
     # Play the specified segment at the selected channel:
-    cmd = ':SOUR:FUNC:MODE:SEGM {0}'.format(segnum)
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':SOUR:FUNC:MODE:SEGM {0}'.format(segnum))
     
     # Enable external clock EXT from the Agilent N5181A.
-    cmd = "FREQ:SOUR EXT"
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ":FREQ:SOUR EXT")
+    
+    # ?
+    #command(instrument, ':FREQ:RAST 1.428E9')
 
-    # Enable Ext Trigger
-    cmd = ':TRIG:SOUR:ENAB TRG1'
-    rc = inst.send_scpi_cmd(cmd)
+    # External trigger
+    command(instrument, ':TRIG:SOUR:ENAB TRG1')
 
-    # Select the external trigger 1.
-    cmd = ':TRIG:SEL EXT1'
-    rc = inst.send_scpi_cmd(cmd)
+    # ?
+    command(instrument, ':TRIG:SEL EXT1')
     
     # Magic thing that reduces jitter.
-    cmd = 'TRIG:LTJ ON'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':TRIG:LTJ ON')
 
     # Set the trigger level.
-    # This was originally 0. 0 doesn't work, 0.1 minimum, 0.2 always works, 0.25 doesn't work sometimes
-    cmd = ':TRIG:LEV 0.25'
-    rc = inst.send_scpi_cmd(cmd)
+    # 0 doesn't work, 0.1 minimum, 0.2 always works, 0.25 doesn't work sometimes
+    command(instrument, ':TRIG:LEV 0.2')
 
     # Following the trigger, send :TRIG:COUN number of waveforms, then return to idle.
-    cmd = ':TRIG:COUN 1'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':TRIG:COUN 1')
 
     # In case something incorrectly sends another trigger, keep sending the :TRIG:COUN number of waveforms.
-    cmd = ':TRIG:IDLE DC'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':TRIG:IDLE DC')
 
     # Turn the trigger on.
-    cmd = ':TRIG:STAT ON'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':TRIG:STAT ON')
 
     # Disable continuous (aka free-running) mode, and force trigger mode.
-    cmd = ':INIT:CONT OFF'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':INIT:CONT OFF')
 
     # Turn on the output of the selected channel.
-    cmd = ':OUTP ON'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':OUTP ON')
+    
+    end_time = time.time()
+    print('Changed waveform in', end_time - start_time, 'seconds.')
     
 def stop():
-    inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
-    inst = TEVisaInst(inst_addr)
-    ch = 1
+    addr = 'TCPIP::127.0.0.1::5025::SOCKET'
+    instrument = TEVisaInst(addr)
 
     # Select channel
-    cmd = ':INST:CHAN {0}'.format(ch)
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':INST:CHAN 1')
 
     # Turn on the output of the selected channel:
-    cmd = ':OUTP OFF'
-    rc = inst.send_scpi_cmd(cmd)
+    command(instrument, ':OUTP OFF')

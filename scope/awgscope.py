@@ -9,16 +9,17 @@ def get_scope_lib():
     rm = pyvisa.ResourceManager()
     lib = rm.visalib
     scope = rm.open_resource('TCPIP::' + scope_manual_ip + '::INSTR')
+    print('Got Scope')
     
     return scope, lib
     
-def get_nanosec_volt_lists():
+def get_nanosec_volt_lists(channel):
     # Given the pyvisa scope, get its curve where domain is nanoseconds and range is volts. It is 
     # important that the time axis is correct.
     
     scope, lib = get_scope_lib()
     
-    scope.write('DATA:SOURCE CH1')
+    scope.write(f'DATA:SOURCE {channel}')
     scope.write('DATA:WIDTH 1')
     scope.write('DATA:ENC RPB')
     

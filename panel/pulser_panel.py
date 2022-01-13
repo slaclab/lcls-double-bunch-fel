@@ -5,6 +5,7 @@ from functools import partial
 import base64
 from bokeh.models import Range1d, Spinner, TextAreaInput
 import scope.pulserscope
+import scope.pulserscope_image
 
 class PulserPanel:
     def __init__(self):
@@ -23,7 +24,7 @@ class PulserPanel:
         self.pulserscope_image.text = img_tag
         
     def plot_pulserscope(self):
-        sec_list, volt_list = scope.pulserscope.get_nanosec_volt_lists()
+        sec_list, volt_list = scope.pulserscope.get_nanosec_volt_lists('CH2')
         self.pulserscope_figure_source.data = dict(x = sec_list, y = volt_list)
         
     def get_controls(self):
@@ -35,15 +36,21 @@ class PulserPanel:
         
         return self.pulserscope_figure, self.pulserscope_image, plot_pulserscope_button, pulserscope_image_button
         
-    def addto(self, savefile, number_of_traces):
-        pulserscope_traces_x = list()
-        pulserscope_traces_y = list()
-        pulserscope_x, pulserscope_y = scope.pulserscope.get_nanosec_volt_lists()
+    def addto(self, savefile, number_of_traces):        
+        channels = ['CH1', 'CH2']
         
-        for index in range(number_of_traces):
-            pulserscope_x, pulserscope_y = scope.pulserscope.get_nanosec_volt_lists()
-            pulserscope_traces_x.append(pulserscope_x)
-            pulserscope_traces_y.append(pulserscope_y)
+        for c in channels:
+            print('Measuring channel', c)
+            
+            pulserscope_traces_x = list()
+            pulserscope_traces_y = list()
+        
+            pulserscope_x, pulserscope_y = scope.pulserscope.get_nanosec_volt_lists(c)
 
-        savefile.create_dataset('pulserscope_traces_x', (number_of_traces,len(pulserscope_x)), data = pulserscope_traces_x)
-        savefile.create_dataset('pulserscope_traces_y', (number_of_traces,len(pulserscope_y)), data = pulserscope_traces_y)
+            for index in range(number_of_traces):
+                pulserscope_x, pulserscope_y = scope.pulserscope.get_nanosec_volt_lists(c)
+                pulserscope_traces_x.append(pulserscope_x)
+                pulserscope_traces_y.append(pulserscope_y)
+
+            savefile.create_dataset(f'pulserscope_traces_x_{c}', (number_of_traces,len(pulserscope_x)), data = pulserscope_traces_x)
+            savefile.create_dataset(f'pulserscope_traces_y_{c}', (number_of_traces,len(pulserscope_y)), data = pulserscope_traces_y)

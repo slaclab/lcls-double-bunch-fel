@@ -54,12 +54,12 @@ class Panel:
         savefile.attrs['time'] = time.time()
         
         self.awg_panel.addto(savefile, self.number_of_traces)
-        # self.pulser_panel.addto(savefile, self.number_of_traces)
+        #self.pulser_panel.addto(savefile, self.number_of_traces)
         
         print('Done saving traces.')
         savefile.close()
         
-    def start_controls(self, doc):
+    def add_elements(self, doc):
         stop_everything_button = Button(label='Stop everything')
         stop_everything_button.on_click(self.stop_everything)
         
@@ -85,7 +85,7 @@ class Panel:
         doc.add_root(row(left, right))
         
     def start(self):
-        self.server = Server({'/': self.start_controls})
+        self.server = Server({'/': self.add_elements})
         self.server.start()
         self.server.io_loop.add_callback(self.server.show, "/")
         self.server.io_loop.start()

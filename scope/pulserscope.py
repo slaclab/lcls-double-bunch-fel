@@ -8,6 +8,7 @@ import shutil
 import time
 import numpy
 import pyvisa
+import socket
 
 def get_nanosec_volt_lists(channel):
     # Get data from the short repetition rate pulser oscilloscope.
@@ -15,7 +16,9 @@ def get_nanosec_volt_lists(channel):
     # Previously we used floppy disks.
     
     # Needs to be set manually.
-    visa_address = 'TCPIP::192.168.1.101::INSTR'
+    ip = socket.gethostbyname('RFARED-PC87017-7254C')
+    visa_address = f'TCPIP::{ip}::INSTR'
+    print(visa_address)
 
     rm = pyvisa.ResourceManager()
     scope = rm.open_resource(visa_address)
@@ -23,7 +26,7 @@ def get_nanosec_volt_lists(channel):
     scope.encoding = 'latin_1'
     scope.read_termination = '\n'
     scope.write_termination = None
-    #scope.write('*cls') # clear ESR
+    scope.write('*cls') # clear ESR
     scope.write('header OFF') # disable attribute echo in replies
 
     print('Getting trace from', scope.query('*idn?'))
@@ -32,11 +35,11 @@ def get_nanosec_volt_lists(channel):
     r = scope.query('*opc?') # sync
 
     # curve configuration
-    scope.write('data:source {0}'.format(channel))
+    scope.write(f'data:source {channel}')
     scope.write('data:start 1')
     acq_record = int(scope.query('horizontal:recordlength?'))
     scope.write('data:stop {}'.format(acq_record))
-    scope.write('wfmoutpre:byt_n 2')
+    scope.write('wfmoutpre:byt_n 8')
 
     # data query
     bin_wave = scope.query_binary_values('curve?', datatype='b', container=np.array)

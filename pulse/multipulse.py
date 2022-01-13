@@ -5,57 +5,48 @@ from functools import partial
 import numpy
 
 class Multipulse:
-    def __init__(self):        
+    def __init__(self):
         self.list_of_pulse = [pulse.pulse.Pulse(-0.5, 0),
                               pulse.pulse.Pulse(-0.7, 50),
                               pulse.pulse.Pulse(-0.4, 100),
                               pulse.pulse.Pulse(-0.9, 150)]
         
-    def add_default_pulse(self, multipulse_column, plot_preview):  
+        self.column = column()
+        
+    def add_default_pulse(self, plot_preview):  
         default_pulse = pulse.pulse.Pulse(0, 0)
         index = len(self.list_of_pulse)
         self.list_of_pulse.append(default_pulse)
-        remove_button = Button(label = 'Remove')
-        remove_button.on_click(partial(self.remove_pulse, multipulse_column, index, plot_preview))
-        control_row = default_pulse.get_control_row(plot_preview)
-        control_row.children.append(remove_button)
-        multipulse_column.children.append(control_row)
+        control_row = default_pulse.get_control_row(self, index, plot_preview)
+        self.column.children.append(control_row)
         
-    def get_add_button(self, multipulse_column, plot_preview):
+    def get_controls(self, plot_preview):
         add_pulse_button = Button(label = 'Add pulse')
-        add_pulse_button.on_click(partial(self.add_default_pulse, multipulse_column, plot_preview))
+        add_pulse_button.on_click(partial(self.add_default_pulse, plot_preview))
         
-        return add_pulse_button
-        
-    def add_controls_to(self, multipulse_column, plot_preview):        
         for index, pulse in enumerate(self.list_of_pulse):
-            remove_button = Button(label = 'Remove')
-            remove_button.on_click(partial(self.remove_pulse, multipulse_column, index, plot_preview))
-            control_row = pulse.get_control_row(plot_preview)
-            control_row.children.append(remove_button)
-
-            multipulse_column.children.append(control_row)
+            control_row = pulse.get_control_row(self, index, plot_preview)
+            self.column.children.append(control_row)
+            
+        plot_preview()
+        
+        return self.column, add_pulse_button
     
-    def remove_pulse(self, multipulse_column, index, plot_preview):
-        if len(self.list_of_pulse) > 1:
-            del self.list_of_pulse[index]
-            # The indices break on the other ones.
-            # Just delete everything and remake the controls so the indices are correct.
-            # Not exquisite programming.
-            multipulse_column.children.clear()
-            self.add_controls_to(multipulse_column, plot_preview)
+    def remove_pulse(self, index, plot_preview):
+        del self.list_of_pulse[index]
+        self.column.children.clear()
+        self.get_controls(plot_preview)
         
     def get_awg_waveform(self):
-        # Get the waveform to send to the AWG.
-        # The waveform is 4096 floats in the range  [0, 2^16].
-        # The range [0, 2^16] maps to [-0.25 Volt, 0.25 Volt].
-        # The waveform is sampled at 1.428 GHz. 
+        # Get the waveform to send to the AWG. The x axis should match the time difference 
+        # between each waveform data point. The waveform is 4096 floats in the range  [0, 2^16].
+        # The range [0, 2^16] maps to [-0.25 Volt, 0.25 Volt]. The waveform is sampled at 1.428 GHz. 
         
         w = self.list_of_pulse[0].get_pulse()
         
         for pulse in self.list_of_pulse[1:]:
-            next_waveform = pulse.get_pulse()
-            w += next_waveform
+            next_w = pulse.get_pulse()
+            w += next_w
             
         # Make the waveform compatible with the AWG input parameters.
         # Basically, a big array of integers with range from 0 to 2^16.
@@ -73,7 +64,8 @@ class Multipulse:
         w = numpy.clip(w, 0, max_dac)
         # Convert from double to int.
         w = w.astype(numpy.uint16)
-            
+        
+        # Time between data points is NOT NECESSARILY 1 nanosecond, and the units of each value is NOT Volts.
         return w
     
     def get_preview_waveform(self):
@@ -84,10 +76,9 @@ class Multipulse:
         # what the output waveform should look like in theory.
         w = self.get_awg_waveform()
         
-        # The time between each x data point is 1 / 1.428 GHz.
-        # This works, somehow.
+        # x is the time axis of the waveform
         x = numpy.arange(0, len(w)) / 1.428
-        
+                
         # The range [0, 2^16] maps to the range [-0.25 Volt, 0.25 Volt].
         w = (w / 2 ** 17) - 0.25
         

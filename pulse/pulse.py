@@ -14,13 +14,19 @@ class Pulse:
         length = 4096
         start = -10
         end = start + length
-        x = numpy.arange(start, end)
+        x = numpy.arange(start, end) / 1.428
         x = x - self.x_offset
+        # x is NOT the time axis of the waveform. It is whatever necessary to make the waveform.
         
         w = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) *
              (1 + self.linear_correction_coefficient*x + self.cubic_correction_coefficient*x**3) )
             
         w = w * self.amplitude / 1.8
+        
+        # Each data point of this waveform will be sampled by the AWG at some frequency,
+        # so the time different between each data point is not necessarily 1 nanosecond,
+        # 1.428 nanoseconds, etc. You should experimentally verify the sampling rate of
+        # the AWG if you ever significantly change its configuration.
     
         return w
     
@@ -40,8 +46,8 @@ class Pulse:
         self.cubic_correction_coefficient = new 
         plot_preview()
     
-    def get_control_row(self, plot_preview):
-        amplitude_slider = Slider(start = -1, end = 1, value = self.amplitude, step = 0.01, title = "Amplitude (V)")
+    def get_control_row(self, multipulse, index, plot_preview):
+        amplitude_slider = Slider(start = -1, end = 1, value = self.amplitude, step = 0.01, title = "Amplitude (norm)")
         amplitude_slider.on_change('value', partial(self.change_amplitude, plot_preview))
         
         x_offset_slider = Slider(start = 0, end = 200, value = self.x_offset, step = 1, title = "X Offset (ns)")
@@ -60,7 +66,10 @@ class Pulse:
                                                      title = 'Cubic Coefficient')
         cubic_correction_coefficient_slider.on_change('value', partial(self.change_cubic_correction_coefficient, plot_preview))
         
-        therow = row(amplitude_slider, x_offset_slider, linear_correction_coefficient_slider, cubic_correction_coefficient_slider)
+        remove_button = Button(label = 'Remove')
+        remove_button.on_click(partial(multipulse.remove_pulse, index, plot_preview))
+        
+        therow = row(amplitude_slider, x_offset_slider, linear_correction_coefficient_slider, cubic_correction_coefficient_slider, remove_button)
         therow.width = 800
         
         return therow
