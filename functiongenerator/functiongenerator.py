@@ -22,13 +22,22 @@ class FunctionGenerator:
         resp = resource.query('*IDN?')
         print('Got the function generator. Response', resp)
         
+<<<<<<< HEAD
         #resp = resource.write('IFRS 2')
         #print(resp)
         
+=======
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
         resp = resource.query('DLAY?2')
         print(resp)
         
         delay_command = f'DLAY 4,0,{delay_nanoseconds}e-9'
         resp = resource.write(delay_command)
         
+<<<<<<< HEAD
         print(resp)
+=======
+    def find_delay(self, scope):
+        # Given some VISA resource of the oscilloscope, measure the difference between 
+        pass
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)

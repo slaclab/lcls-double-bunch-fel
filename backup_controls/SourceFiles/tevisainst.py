@@ -182,7 +182,11 @@ class TEVisaInst(object):
                 pass
 
             self._vi = rsc_mgr.open_resource(rsc_name)
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
             if extra_init:
                 self._init_vi_inst()
 

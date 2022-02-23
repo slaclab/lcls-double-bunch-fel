@@ -1,41 +1,26 @@
-import pulse.pulse
+# Data structure for multiple pulses, sent to the AWG, sent to the amplifiers.
+
+from functools import partial
 from bokeh.layouts import column
 from bokeh.models import Button
-from functools import partial
 import numpy
+import awg.pulse
 
 class Multipulse:
     def __init__(self):
-        self.list_of_pulse = [pulse.pulse.Pulse(-0.5, 0),
-                              pulse.pulse.Pulse(-0.7, 50),
-                              pulse.pulse.Pulse(-0.4, 100),
-                              pulse.pulse.Pulse(-0.9, 150)]
+        self.list_of_pulse = [awg.pulse.Pulse(-0.5, 0),
+                              awg.pulse.Pulse(-0.7, 50),
+                              awg.pulse.Pulse(-0.4, 100),
+                              awg.pulse.Pulse(-0.9, 150)]
         
         self.column = column()
         
     def add_default_pulse(self, plot_preview):  
-        default_pulse = pulse.pulse.Pulse(0, 0)
+        default_pulse = awg.pulse.Pulse(0, 0)
         index = len(self.list_of_pulse)
         self.list_of_pulse.append(default_pulse)
         control_row = default_pulse.get_control_row(self, index, plot_preview)
         self.column.children.append(control_row)
-        
-    def get_controls(self, plot_preview):
-        add_pulse_button = Button(label = 'Add pulse')
-        add_pulse_button.on_click(partial(self.add_default_pulse, plot_preview))
-        
-        for index, pulse in enumerate(self.list_of_pulse):
-            control_row = pulse.get_control_row(self, index, plot_preview)
-            self.column.children.append(control_row)
-            
-        plot_preview()
-        
-        return self.column, add_pulse_button
-    
-    def remove_pulse(self, index, plot_preview):
-        del self.list_of_pulse[index]
-        self.column.children.clear()
-        self.get_controls(plot_preview)
         
     def get_awg_waveform(self):
         # Get the waveform to send to the AWG. The x axis should match the time difference 
@@ -65,7 +50,7 @@ class Multipulse:
         # Convert from double to int.
         w = w.astype(numpy.uint16)
         
-        # Time between data points is NOT NECESSARILY 1 nanosecond, and the units of each value is NOT Volts.
+        # Time between data points is NOT 1 nanosecond, and the units of each value is NOT Volts.
         return w
     
     def get_preview_waveform(self):
@@ -82,4 +67,22 @@ class Multipulse:
         # The range [0, 2^16] maps to the range [-0.25 Volt, 0.25 Volt].
         w = (w / 2 ** 17) - 0.25
         
+        # x is the time axis in nanoseconds, and w is volt axis in units of volts.
         return x, w
+        
+    def get_controls(self, plot_preview):
+        add_pulse_button = Button(label = 'Add pulse')
+        add_pulse_button.on_click(partial(self.add_default_pulse, plot_preview))
+        
+        for index, pulse in enumerate(self.list_of_pulse):
+            control_row = pulse.get_control_row(self, index, plot_preview)
+            self.column.children.append(control_row)
+            
+        plot_preview()
+        
+        return self.column, add_pulse_button
+    
+    def remove_pulse(self, index, plot_preview):
+        del self.list_of_pulse[index]
+        self.column.children.clear()
+        self.get_controls(plot_preview)

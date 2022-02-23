@@ -1,8 +1,8 @@
-import pulse.multipulse
+import awg.multipulse
 import panel.panel
 
 def main():
-    multipulse = pulse.multipulse.Multipulse()
+    multipulse = awg.multipulse.Multipulse()
     thepanel = panel.panel.Panel(multipulse)
     
     thepanel.start()

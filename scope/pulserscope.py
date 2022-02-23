@@ -18,7 +18,10 @@ def get_nanosec_volt_lists(channel):
     # Needs to be set manually.
     ip = socket.gethostbyname('RFARED-PC87017-7254C')
     visa_address = f'TCPIP::{ip}::INSTR'
+<<<<<<< HEAD
     print(visa_address)
+=======
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
 
     rm = pyvisa.ResourceManager()
     scope = rm.open_resource(visa_address)

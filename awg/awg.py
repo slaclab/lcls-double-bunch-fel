@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+# Functions to interact with the AWG. This should be extremely reliable. Choose not to wrap these commands in Python classes, and don't keep instantiated VISA objects in memory.
+
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
 from awg.tabor.tevisainst import TEVisaInst
 import time
 import socket
@@ -16,7 +21,10 @@ def start(multipulse):
     # The address, channel, segment to send the waveform to.
     ip = socket.gethostbyname('UFK21-9')
     addr = f'TCPIP::{ip}::5025::SOCKET'
+<<<<<<< HEAD
     print(addr)
+=======
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
     ch = 1
     segnum = 1
     
@@ -55,6 +63,7 @@ def start(multipulse):
     # Enable external clock EXT from the Agilent N5181A.
     command(instrument, ":FREQ:SOUR EXT")
     
+<<<<<<< HEAD
     # ?
     #command(instrument, ':FREQ:RAST 1.428E9')
 
@@ -63,12 +72,22 @@ def start(multipulse):
 
     # ?
     command(instrument, ':TRIG:SEL EXT1')
+=======
+    # Disable continuous (aka free-running) mode, and force trigger mode.
+    command(instrument, ':INIT:CONT OFF')
+
+    # External trigger
+    command(instrument, ':TRIG:SOUR:ENAB TRG1')
+        
+    command(instrument, ':TRIG:SEL TRG1')
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
     
     # Magic thing that reduces jitter.
     command(instrument, ':TRIG:LTJ ON')
 
     # Set the trigger level.
     # 0 doesn't work, 0.1 minimum, 0.2 always works, 0.25 doesn't work sometimes
+<<<<<<< HEAD
     command(instrument, ':TRIG:LEV 0.2')
 
     # Following the trigger, send :TRIG:COUN number of waveforms, then return to idle.
@@ -82,6 +101,18 @@ def start(multipulse):
 
     # Disable continuous (aka free-running) mode, and force trigger mode.
     command(instrument, ':INIT:CONT OFF')
+=======
+    command(instrument, ':TRIG:LEV -0.5')
+
+    # Following the trigger, send :TRIG:COUN number of waveforms, then return to idle.
+    command(instrument, ':TRIG:COUN 1')
+
+    # In case something incorrectly sends another trigger, keep sending the previous waveform.
+    command(instrument, ':TRIG:IDLE DC')
+
+    # Turn the trigger on.
+    command(instrument, ':TRIG:STAT ON')
+>>>>>>> b99c02f (2022 02 18 B15 Test Code)
 
     # Turn on the output of the selected channel.
     command(instrument, ':OUTP ON')
