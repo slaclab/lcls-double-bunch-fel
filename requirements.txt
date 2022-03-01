@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-=======
 pyvisa
 pyvisa-py
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
 bokeh
 jupyterlab
 h5py

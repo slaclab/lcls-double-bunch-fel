@@ -1,4 +1,5 @@
-import numpy as np
+import pyvisa
+import numpy
 import sys
 import optparse
 import argparse
@@ -10,21 +11,20 @@ import numpy
 import pyvisa
 import socket
 
-def get_nanosec_volt_lists(channel):
-    # Get data from the short repetition rate pulser oscilloscope.
-    # Tektronix TDS 7154.
-    # Previously we used floppy disks.
-    
-    # Needs to be set manually.
+def get_resource():
     ip = socket.gethostbyname('RFARED-PC87017-7254C')
     visa_address = f'TCPIP::{ip}::INSTR'
-<<<<<<< HEAD
-    print(visa_address)
-=======
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
-
     rm = pyvisa.ResourceManager()
     scope = rm.open_resource(visa_address)
+    
+    return scope
+
+def get(channel):
+    # Get data from the short repetition rate pulser oscilloscope.
+    # Tektronix TDS 7154.
+    
+    scope = get_resource()
+    
     scope.timeout = 10000 # ms
     scope.encoding = 'latin_1'
     scope.read_termination = '\n'
@@ -45,7 +45,7 @@ def get_nanosec_volt_lists(channel):
     scope.write('wfmoutpre:byt_n 8')
 
     # data query
-    bin_wave = scope.query_binary_values('curve?', datatype='b', container=np.array)
+    bin_wave = scope.query_binary_values('curve?', datatype='b', container=numpy.array)
 
     # retrieve scaling factors
     nr_pt = int(scope.query('wfmoutpre:nr_pt?'))
@@ -71,9 +71,9 @@ def get_nanosec_volt_lists(channel):
     duration = t_scale * nr_pt
     t_start = (-pre_trig_record * t_scale) + t_sub
     t_stop = t_start + duration
-    scaled_time = np.linspace(t_start, t_stop, num=nr_pt, endpoint=False)
+    scaled_time = numpy.linspace(t_start, t_stop, num=nr_pt, endpoint=False)
     # vertical (voltage)
-    unscaled_wave = np.array(bin_wave, dtype='double') # data type conversion
+    unscaled_wave = numpy.array(bin_wave, dtype='double') # data type conversion
     scaled_volt = (unscaled_wave - v_pos) * v_scale + v_off
     
     scaled_time_nanoseconds = numpy.asarray(scaled_time) * 1e9

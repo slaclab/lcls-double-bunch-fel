@@ -1,20 +1,11 @@
 import os
 import sys
-<<<<<<< HEAD
-srcpath = os.path.realpath('../SourceFiles')
-=======
 import numpy as np
 srcpath = os.path.realpath('SourceFiles')
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
 sys.path.append(srcpath)
 import pyte_visa_utils as pyte
 from tevisainst import TEVisaInst
 
-<<<<<<< HEAD
-import numpy as np
-
-=======
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
 #internal
 #inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
 #usb cable
@@ -35,11 +26,6 @@ resp = inst.send_scpi_query(":INST:CHAN? MAX")
 print("Number of channels: " + resp)
 num_channels = int(resp)
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
 # set sampling DAC freq.
 sampleRateDAC = 1E9
 print('Sample Clk Freq {0}'.format(sampleRateDAC))

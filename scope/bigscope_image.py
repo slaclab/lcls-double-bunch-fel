@@ -1,8 +1,13 @@
 import pyvisa
-<<<<<<< HEAD
-=======
 import socket
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
+
+def get_resource():
+    ip = socket.gethostbyname('RFARED-PC87017-7254C')
+    visa_address = f'TCPIP::{ip}::INSTR'
+    rm = pyvisa.ResourceManager()
+    scope = rm.open_resource(visa_address)
+    
+    return scope
 
 def get():
     # Tektronix DPO TDS7154 oscilloscope
@@ -13,13 +18,7 @@ def get():
     # 1. Set the IP address here.
     # 1. Test ping that IP address.
     
-    rm = pyvisa.ResourceManager()
-<<<<<<< HEAD
-    scope = rm.open_resource('TCPIP::192.168.1.100::INSTR')
-=======
-    ip = socket.gethostbyname('RFARED-PC87017-7254C')
-    scope = rm.open_resource(f'TCPIP::{ip}::INSTR')
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
+    scope = get_resource()
 
     scope.write("HARDCopy:PORT FILE;")
     scope.write("EXPort:FORMat PNG")

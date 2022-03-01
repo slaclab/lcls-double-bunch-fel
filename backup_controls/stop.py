@@ -1,10 +1,6 @@
 import os
 import sys
-<<<<<<< HEAD
-srcpath = os.path.realpath('../SourceFiles')
-=======
 srcpath = os.path.realpath('SourceFiles')
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
 sys.path.append(srcpath)
 import pyte_visa_utils as pyte
 from tevisainst import TEVisaInst
@@ -12,11 +8,7 @@ from tevisainst import TEVisaInst
 import numpy as np
 
 #internal
-<<<<<<< HEAD
-inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
-=======
 inst_addr = 'TCPIP::192.168.1.102::5025::SOCKET'
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
 #usb cable
 #inst_addr = 'TCPIP::192.168.71.1::5025::SOCKET'
   

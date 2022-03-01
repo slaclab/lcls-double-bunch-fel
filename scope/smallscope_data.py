@@ -1,6 +1,7 @@
+from struct import unpack
+
 import pyvisa
 import numpy
-from struct import unpack
 
 def get_scope_lib():
     # Return the pyvisa scope so we can get data and images from it.
@@ -9,11 +10,10 @@ def get_scope_lib():
     rm = pyvisa.ResourceManager()
     lib = rm.visalib
     scope = rm.open_resource('TCPIP::' + scope_manual_ip + '::INSTR')
-    print('Got Scope')
     
     return scope, lib
-    
-def get_nanosec_volt_lists(channel):
+
+def get(channel):
     # Given the pyvisa scope, get its curve where domain is nanoseconds and range is volts. It is 
     # important that the time axis is correct.
     

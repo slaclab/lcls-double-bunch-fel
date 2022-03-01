@@ -2,10 +2,12 @@
 
 import pyvisa
 import numpy
+from bokeh.models import TextInput, Button, Div
+from bokeh.layouts import column, row, grid
 
 class FunctionGenerator:
     def __init__(self):
-        pass
+        self.delay_nanoseconds = 0
     
     def get_resource(self):
         scope_manual_ip = '192.168.1.125'
@@ -15,6 +17,8 @@ class FunctionGenerator:
         return resource
 
     def set_delay(self, delay_nanoseconds):
+        # Set the delay of trigger C relative to trigger A by the given nanoseconds.
+        
         # Page 56 https://www.thinksrs.com/downloads/pdfs/manuals/DG645m.pdf
         
         resource = self.get_resource()
@@ -22,22 +26,20 @@ class FunctionGenerator:
         resp = resource.query('*IDN?')
         print('Got the function generator. Response', resp)
         
-<<<<<<< HEAD
-        #resp = resource.write('IFRS 2')
-        #print(resp)
-        
-=======
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
         resp = resource.query('DLAY?2')
         print(resp)
         
-        delay_command = f'DLAY 4,0,{delay_nanoseconds}e-9'
+        delay_command = f'DLAY 2,0,{delay_nanoseconds}e-9'
         resp = resource.write(delay_command)
         
-<<<<<<< HEAD
-        print(resp)
-=======
-    def find_delay(self, scope):
-        # Given some VISA resource of the oscilloscope, measure the difference between 
-        pass
->>>>>>> b99c02f (2022 02 18 B15 Test Code)
+    def change_delay(self, attr, old, new):
+        self.delay_nanoseconds = float(new)
+        self.set_delay(new)
+    
+    def get_controls(self, frickin_width):
+        title = Div(text='<h3>Function Generator</h3>')
+        
+        delay_inputbox = TextInput(title = "Delay (ns)")
+        delay_inputbox.on_change('value', self.change_delay)
+        
+        return column(title, delay_inputbox)

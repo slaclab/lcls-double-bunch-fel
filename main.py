@@ -1,11 +1,8 @@
-import awg.multipulse
-import panel.panel
+import host.host
 
 def main():
-    multipulse = awg.multipulse.Multipulse()
-    thepanel = panel.panel.Panel(multipulse)
-    
-    thepanel.start()
+    thehost = host.host.Host()
+    thehost.start_interface()
     
 if __name__ == '__main__':
     main()
