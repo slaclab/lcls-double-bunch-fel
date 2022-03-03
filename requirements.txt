@@ -1,5 +1,4 @@
 pyvisa
-pyvisa-py
 bokeh
 jupyterlab
 h5py
