@@ -16,6 +16,13 @@ class Pulse:
         self.cubic_correction_coefficient = 0.005
         
     def get_pulse(self):
+        """
+        Make one array of 4096 floats in the range [-1, 1]. This represents one
+        "pulse" that we want to send to the AWG on one channel.
+        
+        The AWG has multiple channels. Only one "waveform" can be sent out each channel per time.
+        Each channel can have multiple "pulses" which it combines into one "waveform."
+        """
         length = 4096
         start = -10
         end = start + length
@@ -29,12 +36,9 @@ class Pulse:
         w = ( (- numpy.tanh(x - 5) - numpy.tanh(-x - 5)) *
              (1 + self.linear_correction_coefficient*x + self.cubic_correction_coefficient*x**3) )
         
-        # Why do this?
-        w = w * self.amplitude / 2
+        # Normalize to [-1, 1], idk how to do this analytically.
+        w = w * self.amplitude / 3.52
         
-        # The AWG should be set to sample at the clock frequency its receiving, so each data point will be sampled
-        # every 1/clock frequency seconds.
-    
         return w
     
     def change_amplitude(self, channel, attr, old, new):

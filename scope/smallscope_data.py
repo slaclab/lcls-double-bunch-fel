@@ -6,7 +6,7 @@ import numpy
 def get_scope_lib():
     # Return the pyvisa scope so we can get data and images from it.
 
-    scope_manual_ip = '192.168.1.123'
+    scope_manual_ip = '192.168.1.128'
     rm = pyvisa.ResourceManager()
     lib = rm.visalib
     scope = rm.open_resource('TCPIP::' + scope_manual_ip + '::INSTR')

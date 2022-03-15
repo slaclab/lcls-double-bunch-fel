@@ -70,8 +70,13 @@ class AWG:
 
         # Get the available memory in bytes of wavform-data (per DDR):
         query(instrument, ":TRACe:FREE?")
+        
+        # Set the expected frequency into CLK IN so the AWG can set its internal PLL. It must be within :ROSC:FREQ Hz.
+        # However the output on all channels zeros out when this command is sent, and then recovered after 0.5 seconds.
+        # This is not acceptable so do not use it and use worse jitter.
+        # command(instrument, ":FREQ:RAST 1.428E9")
 
-        # Enable external clock EXT from the Agilent N5181A.
+        # Enable external clock EXT from the Agilent N5181A. If :FREQ:RAST is not set then this will error.
         command(instrument, ":FREQ:SOUR EXT")
 
         # Select channel.
@@ -93,18 +98,20 @@ class AWG:
         # Each channel can have multiple segments, just select the first one.
         command(instrument, f':SOUR:FUNC:MODE:SEGM {channel.channel}')
 
-        # Mean time to write the waveform is 0.5 seconds. Set to 10 seconds.
+        # Write data to segment.
         instrument.write_binary_data('*OPC?; :TRAC:DATA', waveform)
 
         # Trigger waveform on front panel TRG1.
         command(instrument, f':TRIG:SOUR:ENAB {channel.trigger}')
-        command(instrument, ':TRIG:SEL TRG1')
+        command(instrument, f':TRIG:SEL {channel.trigger}')
 
         # Magic thing that reduces jitter.
         command(instrument, ':TRIG:LTJ ON')
 
-        # Set trigger level to 50%.
+        # Trigger at 0.5 V.
         command(instrument, ':TRIG:LEV 0.5')
+        
+        # TRIG:WID should be 0, which means trigger on pulse of width 0.
 
         # Following the trigger, send :TRIG:COUN number of waveforms, then return to idle.
         command(instrument, ':TRIG:COUN 1')
@@ -117,9 +124,12 @@ class AWG:
 
         # Turn the trigger on.
         command(instrument, ':TRIG:STAT ON')
-
+        
         # Turn on the output of the selected channel.
         command(instrument, ':OUTP ON')
+        
+        # The peak voltage.
+        command(instrument, ':VOLT 1.2')
 
         end_time = time.time()
         print('Changed waveform in', end_time - start_time, 'seconds.')

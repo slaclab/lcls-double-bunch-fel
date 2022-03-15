@@ -2,30 +2,47 @@ import os
 import sys
 srcpath = os.path.realpath('SourceFiles')
 sys.path.append(srcpath)
-import pyte_visa_utils as pyte
-from tevisainst import TEVisaInst
+import socket
 
 import numpy as np
 
-#internal
-inst_addr = 'TCPIP::127.0.0.1::5025::SOCKET'
-#usb cable
-#inst_addr = 'TCPIP::192.168.1.103::5025::SOCKET'
-  
-inst = TEVisaInst(inst_addr)
+import pyte_visa_utils as pyte
+from tevisainst import TEVisaInst
 
-ch = 1
-segnum = 1
+def get_instrument():
+    ip = socket.gethostbyname('UFK21-9')
+    addr = f'TCPIP::{ip}::5025::SOCKET'
+    instrument = TEVisaInst(addr)
 
-# Select channel
-cmd = ':INST:CHAN {0}'.format(ch)
-rc = inst.send_scpi_cmd(cmd)
+    return instrument
 
-# Channel is selected. Make the query you want.
+def query(instrument, query_string):
+    resp = instrument.send_scpi_query(query_string)
+    print(query_string, resp)
+    return resp
+    
+def command(instrument, command_string):
+    resp = instrument.send_scpi_cmd(command_string)
+    resp = instrument.send_scpi_query(':SYST:ERR?')
+    print(command_string, 'error', resp)
+    
+inst = get_instrument()
 
-resp = inst.send_scpi_query(":TRIG:LTJ?")
+for i in [1, 2]:
+    print(f'Channel {i}')
+    
+    ch = i
+    segnum = i
 
-print("Resp: " + resp)
+    # Select channel
+    cmd = ':INST:CHAN {0}'.format(ch)
+    rc = inst.send_scpi_cmd(cmd)
 
-cmd = "FREQ:SOUR EXT"
-rc = inst.send_scpi_cmd(cmd)
+    # Channel is selected. Make the query you want.
+    
+    query(inst, ":OUTP?")
+    query(inst, ":FREQ:RAST?")
+    query(inst, ":FREQ:SOUR?")
+    query(inst, ":FREQ?")
+    query(inst, ":VOLT?")
+    

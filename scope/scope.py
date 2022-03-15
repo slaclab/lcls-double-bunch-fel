@@ -58,21 +58,21 @@ def get_controls(frickin_width):
                               
     return controls
                                              
-# def addto(self, savefile, number_of_traces):        
-#         channels = ['CH1']
+def addto(self, savefile, number_of_traces):        
+        channels = ['CH1']
         
-#         for c in channels:
-#             print('Measuring channel', c)
+        for c in channels:
+            print('Measuring channel', c)
             
-#             scope_traces_x = list()
-#             scope_traces_y = list()
+            scope_traces_x = list()
+            scope_traces_y = list()
         
-#             scope_x, scope_y = scope.smallscope.get_nanosec_volt_lists(c)
+            scope_x, scope_y = scope.smallscope.get_nanosec_volt_lists(c)
 
-#             for index in range(number_of_traces):
-#                 scope_x, scope_y = scope.smallscope.get_nanosec_volt_lists(c)
-#                 scope_traces_x.append(scope_x)
-#                 scope_traces_y.append(scope_y)
+            for index in range(number_of_traces):
+                scope_x, scope_y = scope.smallscope.get_nanosec_volt_lists(c)
+                scope_traces_x.append(scope_x)
+                scope_traces_y.append(scope_y)
 
-#             savefile.create_dataset(f'scope_traces_x_{c}', (number_of_traces,len(scope_x)), data = scope_traces_x)
-#             savefile.create_dataset(f'scope_traces_y_{c}', (number_of_traces,len(scope_y)), data = scope_traces_y)
+            savefile.create_dataset(f'scope_traces_x_{c}', (number_of_traces,len(scope_x)), data = scope_traces_x)
+            savefile.create_dataset(f'scope_traces_y_{c}', (number_of_traces,len(scope_y)), data = scope_traces_y)
